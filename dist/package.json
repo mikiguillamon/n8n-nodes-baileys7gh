@@ -1,0 +1,52 @@
+{
+    "name": "n8n-nodes-baileys-instance",
+    "version": "0.1.0",
+    "description": "n8n community node for the wa-instance API built on top of Baileys 7.",
+    "license": "MIT",
+    "homepage": "https://docs.n8n.io/integrations/creating-nodes/",
+    "keywords": [
+        "n8n-community-node-package",
+        "n8n",
+        "whatsapp",
+        "baileys",
+        "community-node"
+    ],
+    "author": {
+        "name": "Miki Guillamon"
+    },
+    "scripts": {
+        "build": "n8n-node build",
+        "build:watch": "tsc --watch",
+        "dev": "n8n-node dev",
+        "lint": "n8n-node lint",
+        "lint:fix": "n8n-node lint --fix",
+        "release": "n8n-node release",
+        "prepublishOnly": "n8n-node prerelease"
+    },
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=22.0"
+    },
+    "n8n": {
+        "n8nNodesApiVersion": 1,
+        "strict": true,
+        "credentials": [
+            "dist/credentials/BaileysInstanceApi.credentials.js"
+        ],
+        "nodes": [
+            "dist/nodes/BaileysInstance/BaileysInstance.node.js"
+        ]
+    },
+    "devDependencies": {
+        "@n8n/node-cli": "*",
+        "eslint": "9.29.0",
+        "prettier": "3.8.3",
+        "release-it": "20.2.0",
+        "typescript": "5.9.3"
+    },
+    "peerDependencies": {
+        "n8n-workflow": "*"
+    }
+}
