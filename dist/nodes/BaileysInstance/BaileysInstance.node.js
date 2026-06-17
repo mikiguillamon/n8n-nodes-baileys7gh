@@ -448,7 +448,7 @@ const operationProperties = [
                 name: 'generateIdempotencyKey',
                 type: 'boolean',
                 default: true,
-                description: 'Whether to generate a unique X-Idempotency-Key per n8n item when no manual key is provided.',
+                description: 'Whether to generate a unique X-Idempotency-Key per n8n item when no manual key is provided',
             },
             {
                 displayName: 'Idempotency Key',
@@ -869,7 +869,7 @@ const operationProperties = [
         name: 'ignoreResponseCode',
         type: 'boolean',
         default: false,
-        description: 'Whether to return the error as JSON instead of failing the node.',
+        description: 'Whether to return the error as JSON instead of failing the node',
         displayOptions: {
             show: { resource: ['customApiRequest'], operation: ['execute'] },
         },

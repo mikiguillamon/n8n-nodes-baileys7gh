@@ -3,7 +3,10 @@
     "version": "0.1.0",
     "description": "n8n community node for the wa-instance API built on top of Baileys 7.",
     "license": "MIT",
-    "homepage": "https://docs.n8n.io/integrations/creating-nodes/",
+    "homepage": "https://github.com/mikiguillamon/n8n-nodes-baileys7gh",
+    "bugs": {
+        "url": "https://github.com/mikiguillamon/n8n-nodes-baileys7gh/issues"
+    },
     "keywords": [
         "n8n-community-node-package",
         "n8n",
@@ -14,12 +17,18 @@
     "author": {
         "name": "Miki Guillamon"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mikiguillamon/n8n-nodes-baileys7gh.git"
+    },
     "scripts": {
         "build": "n8n-node build",
         "build:watch": "tsc --watch",
         "dev": "n8n-node dev",
         "lint": "n8n-node lint",
         "lint:fix": "n8n-node lint --fix",
+        "smoke": "npm run lint && npm run build",
+        "typecheck": "tsc --noEmit",
         "release": "n8n-node release",
         "prepublishOnly": "n8n-node prerelease"
     },
@@ -27,7 +36,11 @@
         "dist"
     ],
     "engines": {
-        "node": ">=22.0"
+        "node": ">=22.14.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     },
     "n8n": {
         "n8nNodesApiVersion": 1,
@@ -48,5 +61,6 @@
     },
     "peerDependencies": {
         "n8n-workflow": "*"
-    }
+    },
+    "packageManager": "npm@11.3.0"
 }

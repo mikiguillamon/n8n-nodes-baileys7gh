@@ -93,6 +93,32 @@ npm run build
 npm run dev
 ```
 
+## Publicacion en npm
+
+Este paquete esta preparado para publicarse como paquete publico de npm y para cumplir el flujo recomendado por n8n con GitHub Actions + provenance.
+
+### Flujo recomendado
+
+1. Configura el Trusted Publisher del paquete en npm para este repositorio y el workflow `publish.yml`.
+2. Haz un release con:
+
+```bash
+npm run release
+```
+
+3. El tag `v*` disparara GitHub Actions y publicara el paquete en npm.
+
+### Publicacion manual
+
+Si solo quieres hacer una publicacion inicial manual y no te importa todavia la verificacion de n8n:
+
+```bash
+npm login
+npm publish --access public
+```
+
+Para verificacion en n8n, la publicacion correcta es desde GitHub Actions con provenance.
+
 ## Conversión futura a Tool/MCP
 
 El nodo ya queda marcado con `usableAsTool: true`, así que el siguiente paso natural dentro de n8n es:

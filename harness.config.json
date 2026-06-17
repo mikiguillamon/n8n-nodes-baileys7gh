@@ -1,0 +1,31 @@
+{
+  "project": "n8n-nodes-baileys7gh",
+  "description": "Unknown",
+  "detected": {
+    "stack": [
+      "node"
+    ],
+    "package_managers": [
+      "npm"
+    ],
+    "source_dirs": [],
+    "test_dirs": [],
+    "ci": []
+  },
+  "commands": {
+    "setup": [
+      "npm install"
+    ],
+    "format_check": [],
+    "lint": [
+      "npm run lint"
+    ],
+    "typecheck": [],
+    "test": [],
+    "build": [
+      "npm run build"
+    ],
+    "smoke": []
+  },
+  "notes": []
+}
