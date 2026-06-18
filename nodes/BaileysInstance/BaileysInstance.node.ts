@@ -2739,6 +2739,10 @@ function getErrorHint(error: unknown): string {
 		return 'The referenced resource was not found in the backend.';
 	}
 
+	if (httpCode === '503' && lowerMessage.includes('/health/deps')) {
+		return 'The backend is reachable, but one or more dependencies are not ready yet. If the instance is still waiting for pairing, check Get Status and Get Pairing QR.';
+	}
+
 	if (httpCode === '400' && lowerMessage.includes('group')) {
 		return 'Check that the JID belongs to a real WhatsApp group.';
 	}

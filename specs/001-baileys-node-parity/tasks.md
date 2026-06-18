@@ -20,6 +20,7 @@
 
 - [x] T011 Update `README.md` to reflect the new parity surface and trigger/webhook positioning. (`FR-008`)
 - [x] T012 Update trigger docs so polling and webhook ingress recommendations are explicit and non-contradictory. (`FR-008`)
+- [x] T017 Align credential validation and onboarding docs with the updated backend readiness semantics. (`FR-010`)
 
 ## Phase 4 - Verification
 

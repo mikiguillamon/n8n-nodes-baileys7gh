@@ -61,6 +61,7 @@ As a maintainer, I want the trigger code and docs to clearly distinguish polling
 - Group operations may return `400` when a non-group JID is used.
 - Preview operations must never reuse send-only idempotency behavior.
 - `continueOnFail()` must still return a structured per-item error for newly added operations.
+- Credential validation must not reject onboarding states where the backend is reachable and authenticated but WhatsApp pairing is still pending.
 
 ## Requirements
 
@@ -75,6 +76,7 @@ As a maintainer, I want the trigger code and docs to clearly distinguish polling
 - **FR-007**: The node MUST return structured item-level errors when `continueOnFail()` is enabled for newly added operations.
 - **FR-008**: The node documentation MUST distinguish between polling via `Baileys Trigger` and realtime ingress via the native n8n `Webhook` node.
 - **FR-009**: The repository MUST include SDD artifacts for this feature under `specs/001-baileys-node-parity/`.
+- **FR-010**: Credential validation MUST use a backend-authenticated status check that succeeds before strict dependency readiness, and docs/errors MUST explain that `GET /health/deps` can still return `503` during pending pairing.
 
 ### Key Entities
 

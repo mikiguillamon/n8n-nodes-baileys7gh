@@ -7,6 +7,13 @@
 - The implementation guide recommends the native n8n `Webhook` node for realtime inbound delivery via backend `WEBHOOK_URL`.
 - Decision: keep the trigger, position it clearly as polling, and resolve the tension through documentation rather than a trigger redesign.
 
+## Credential and readiness stance
+
+- The backend can return `200` on `GET /status` even when the WhatsApp connection is not open yet.
+- `GET /health/deps` is a stricter readiness check and can legitimately return `503` before pairing is complete.
+- Decision: use `GET /status` for the credential test so onboarding states are treated as authenticated but not ready.
+- Decision: keep `Get Dependencies Health` as an explicit operational check and document the distinction in README and node error hints.
+
 ## Error mapping
 
 - `409` must not be treated as idempotency-only.

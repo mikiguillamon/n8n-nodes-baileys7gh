@@ -35,7 +35,14 @@ El credential `Baileys Instance API` pide:
 - `Timeout (ms)`
 - `Allow Self-Signed TLS Certificates`
 
-La comprobación de credenciales usa `GET /health/deps`.
+La comprobación de credenciales usa `GET /status`.
+
+Notas importantes sobre onboarding y readiness:
+
+- una instancia con API key válida puede responder bien a `GET /status` aunque todavía no esté pairada
+- `GET /health/deps` sigue disponible como check operativo estricto
+- mientras WhatsApp no tenga `connection: open`, `GET /health/deps` puede devolver `503` sin que eso signifique credenciales inválidas
+- para distinguir entre onboarding pendiente y readiness estricta, usa `Get Status` junto con `Get Pairing QR` o `Request Pairing Code`
 
 ## Recursos y operaciones
 

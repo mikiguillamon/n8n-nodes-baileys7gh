@@ -56,7 +56,7 @@ class BaileysInstanceApi {
         this.test = {
             request: {
                 baseURL: '={{$credentials.baseUrl}}',
-                url: '/health/deps',
+                url: '/status',
                 method: 'GET',
                 skipSslCertificateValidation: '={{$credentials.tlsAllowSelfSigned}}',
             },
