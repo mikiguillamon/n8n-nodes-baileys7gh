@@ -94,6 +94,24 @@ const messageOperations = {
     },
     options: [
         {
+            name: 'Delete',
+            value: 'delete',
+            description: 'Delete a message by ID',
+            action: 'Delete a message',
+        },
+        {
+            name: 'Edit',
+            value: 'edit',
+            description: 'Edit a message by ID',
+            action: 'Edit a message',
+        },
+        {
+            name: 'Forward',
+            value: 'forward',
+            description: 'Forward a message to another recipient',
+            action: 'Forward a message',
+        },
+        {
             name: 'Get',
             value: 'get',
             description: 'Get a single outbound message by ID',
@@ -112,16 +130,46 @@ const messageOperations = {
             action: 'Get many a message',
         },
         {
+            name: 'Mark Read',
+            value: 'markRead',
+            description: 'Mark one or more message keys as read',
+            action: 'Mark read a message',
+        },
+        {
             name: 'Preview Send',
             value: 'previewSend',
             description: 'Validate policy and normalization without sending',
             action: 'Preview send a message',
         },
         {
+            name: 'React',
+            value: 'react',
+            description: 'React to a message by ID',
+            action: 'React a message',
+        },
+        {
+            name: 'Refresh Media',
+            value: 'refreshMedia',
+            description: 'Refresh media for a persisted message',
+            action: 'Refresh media a message',
+        },
+        {
+            name: 'Reply',
+            value: 'reply',
+            description: 'Reply to a message by ID',
+            action: 'Reply a message',
+        },
+        {
             name: 'Send Media',
             value: 'sendMedia',
             description: 'Send a single media message',
             action: 'Send media a message',
+        },
+        {
+            name: 'Send Receipts',
+            value: 'sendReceipts',
+            description: 'Send receipts for one or more messages',
+            action: 'Send receipts a message',
         },
         {
             name: 'Send Text',
@@ -606,7 +654,51 @@ const operationProperties = [
         type: 'string',
         default: '',
         displayOptions: {
-            show: { resource: ['message'], operation: ['get', 'getInboundMessage'] },
+            show: {
+                resource: ['message'],
+                operation: ['get', 'getInboundMessage', 'reply', 'forward', 'delete', 'edit', 'react', 'refreshMedia'],
+            },
+        },
+    },
+    {
+        displayName: 'Text',
+        name: 'messageActionText',
+        type: 'string',
+        default: '',
+        typeOptions: {
+            rows: 3,
+        },
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['reply', 'edit'],
+            },
+        },
+    },
+    {
+        displayName: 'Forward To',
+        name: 'forwardTo',
+        type: 'string',
+        default: '',
+        placeholder: '34600111222 or 34600111222@s.whatsapp.net',
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['forward'],
+            },
+        },
+    },
+    {
+        displayName: 'Emoji',
+        name: 'reactionEmoji',
+        type: 'string',
+        default: '',
+        description: 'Reaction emoji. Leave empty only if your backend supports clearing reactions.',
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['react'],
+            },
         },
     },
     {
@@ -625,6 +717,168 @@ const operationProperties = [
             { displayName: 'Status', name: 'status', type: 'string', default: '' },
             { displayName: 'To', name: 'to', type: 'dateTime', default: '' },
             { displayName: 'To JID', name: 'toJid', type: 'string', default: '' },
+        ],
+    },
+    {
+        displayName: 'Additional Options',
+        name: 'messageActionAdditionalOptions',
+        type: 'collection',
+        default: {},
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['reply', 'forward', 'delete', 'edit', 'react'],
+            },
+        },
+        options: [
+            {
+                displayName: 'Force',
+                name: 'force',
+                type: 'boolean',
+                default: false,
+                displayOptions: {
+                    show: {
+                        '/operation': ['forward'],
+                    },
+                },
+            },
+            {
+                displayName: 'Generate Automatically',
+                name: 'generateIdempotencyKey',
+                type: 'boolean',
+                default: true,
+                description: 'Whether to generate a unique X-Idempotency-Key per n8n item when no manual key is provided',
+            },
+            {
+                displayName: 'Idempotency Key',
+                name: 'idempotencyKey',
+                type: 'string',
+                default: '',
+            },
+        ],
+    },
+    {
+        displayName: 'Keys',
+        name: 'messageReadKeys',
+        type: 'fixedCollection',
+        typeOptions: {
+            multipleValues: true,
+        },
+        default: {},
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['markRead'],
+            },
+        },
+        options: [
+            {
+                name: 'values',
+                displayName: 'Keys',
+                values: [
+                    {
+                        displayName: 'From Me',
+                        name: 'fromMe',
+                        type: 'boolean',
+                        default: false,
+                    },
+                    {
+                        displayName: 'ID',
+                        name: 'id',
+                        type: 'string',
+                        default: '',
+                    },
+                    {
+                        displayName: 'Participant',
+                        name: 'participant',
+                        type: 'string',
+                        default: '',
+                    },
+                    {
+                        displayName: 'Remote JID',
+                        name: 'remoteJid',
+                        type: 'string',
+                        default: '',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        displayName: 'JID',
+        name: 'messageReceiptsJid',
+        type: 'string',
+        default: '',
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['sendReceipts'],
+            },
+        },
+    },
+    {
+        displayName: 'Message IDs',
+        name: 'messageReceiptIds',
+        type: 'fixedCollection',
+        typeOptions: {
+            multipleValues: true,
+        },
+        default: {},
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['sendReceipts'],
+            },
+        },
+        options: [
+            {
+                name: 'values',
+                displayName: 'Message IDs',
+                values: [
+                    {
+                        displayName: 'Message ID',
+                        name: 'messageId',
+                        type: 'string',
+                        default: '',
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        displayName: 'Additional Options',
+        name: 'messageReceiptsAdditionalOptions',
+        type: 'collection',
+        default: {},
+        displayOptions: {
+            show: {
+                resource: ['message'],
+                operation: ['sendReceipts'],
+            },
+        },
+        options: [
+            {
+                displayName: 'Participant',
+                name: 'participant',
+                type: 'string',
+                default: '',
+            },
+            {
+                displayName: 'Type',
+                name: 'type',
+                type: 'options',
+                default: '',
+                options: [
+                    { name: 'Default', value: '' },
+                    { name: 'Hist Sync', value: 'hist_sync' },
+                    { name: 'Inactive', value: 'inactive' },
+                    { name: 'Peer Msg', value: 'peer_msg' },
+                    { name: 'Played', value: 'played' },
+                    { name: 'Read', value: 'read' },
+                    { name: 'Read Self', value: 'read-self' },
+                    { name: 'Sender', value: 'sender' },
+                ],
+            },
         ],
     },
     {
@@ -1331,6 +1585,87 @@ async function executeMessageOperation(itemIndex, operation) {
             }),
         });
     }
+    if (operation === 'reply') {
+        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/reply`,
+            body: {
+                text: this.getNodeParameter('messageActionText', itemIndex),
+            },
+            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-reply', additionalOptions),
+        });
+    }
+    if (operation === 'forward') {
+        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/forward`,
+            body: cleanObject({
+                to: this.getNodeParameter('forwardTo', itemIndex),
+                force: additionalOptions.force === true ? true : undefined,
+            }),
+            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-forward', additionalOptions),
+        });
+    }
+    if (operation === 'delete') {
+        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/delete`,
+            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-delete', additionalOptions),
+        });
+    }
+    if (operation === 'edit') {
+        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/edit`,
+            body: {
+                text: this.getNodeParameter('messageActionText', itemIndex),
+            },
+            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-edit', additionalOptions),
+        });
+    }
+    if (operation === 'react') {
+        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/reaction`,
+            body: cleanObject({
+                emoji: getOptionalString(this.getNodeParameter('reactionEmoji', itemIndex)),
+            }),
+            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-react', additionalOptions),
+        });
+    }
+    if (operation === 'markRead') {
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: '/messages/read',
+            body: {
+                keys: getMessageReadKeys.call(this, itemIndex),
+            },
+        });
+    }
+    if (operation === 'sendReceipts') {
+        const additionalOptions = this.getNodeParameter('messageReceiptsAdditionalOptions', itemIndex, {});
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: '/messages/receipts',
+            body: cleanObject({
+                jid: this.getNodeParameter('messageReceiptsJid', itemIndex),
+                participant: getOptionalString(additionalOptions.participant),
+                message_ids: getMessageReceiptIds.call(this, itemIndex),
+                type: getOptionalString(additionalOptions.type),
+            }),
+        });
+    }
+    if (operation === 'refreshMedia') {
+        return await baileysRequest.call(this, itemIndex, {
+            method: 'POST',
+            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/media/refresh`,
+        });
+    }
     throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported message operation "${operation}"`, {
         itemIndex,
     });
@@ -1638,6 +1973,23 @@ function getMediaBatchItems(itemIndex, usePreviewSwitch = false) {
         audio_duration_ms: entry.audioDurationMs || undefined,
         client_ref: entry.clientRef || undefined,
     }));
+}
+function getMessageReadKeys(itemIndex) {
+    var _a;
+    const collection = this.getNodeParameter('messageReadKeys', itemIndex, {});
+    return ((_a = collection.values) !== null && _a !== void 0 ? _a : []).map((entry) => cleanObject({
+        remoteJid: entry.remoteJid,
+        id: entry.id,
+        participant: entry.participant || undefined,
+        fromMe: entry.fromMe === true ? true : undefined,
+    }));
+}
+function getMessageReceiptIds(itemIndex) {
+    var _a;
+    const collection = this.getNodeParameter('messageReceiptIds', itemIndex, {});
+    return ((_a = collection.values) !== null && _a !== void 0 ? _a : [])
+        .map((entry) => { var _a; return (_a = entry.messageId) === null || _a === void 0 ? void 0 : _a.trim(); })
+        .filter((value) => Boolean(value));
 }
 function getNameValuePairs(itemIndex, propertyName) {
     var _a;

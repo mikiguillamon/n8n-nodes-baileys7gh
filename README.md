@@ -51,12 +51,20 @@ La comprobación de credenciales usa `GET /health/deps`.
 
 ### Message
 
+- Delete
+- Edit
+- Forward
 - Send Text
 - Send Media
 - Preview Send
 - Get
 - Get Many
 - Get Inbound Message
+- Mark Read
+- React
+- Refresh Media
+- Reply
+- Send Receipts
 
 ### Batch
 
