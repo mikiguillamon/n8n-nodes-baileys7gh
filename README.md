@@ -7,11 +7,17 @@ Community node de n8n para consumir una instancia `wa-instance` basada en Bailey
 - Recurso `Instance` para health, status, pairing, logout, colas y webhook test
 - Recurso `Message` para texto, media, previews, consulta de outbounds e inbound persistido
 - Recurso `Batch` para envíos y previews batch
+- Recurso `Chat` para snapshots persistidos de chats
+- Recurso `Contact` para snapshots persistidos de contactos
 - Recurso `Consent` para alta, revocación y consulta
+- Recurso `Event` para inspección de eventos persistidos
+- Recurso `Group` para snapshots persistidos de grupos
+- Recurso `History Sync` para estado y fetch on-demand de historial
 - Recurso `Recipient` para límites operativos por JID
 - Recurso `Webhook Delivery` para inspección y retry
 - Recurso `Custom API Request` como escape hatch
 - `usableAsTool: true` para poder reutilizarlo como Tool dentro de flujos/agentes de n8n
+- Nodo `Baileys Trigger` para polling de eventos persistidos en `/events`
 
 ## Requisitos
 
@@ -65,9 +71,31 @@ La comprobación de credenciales usa `GET /health/deps`.
 - Revoke
 - Get
 
+### Chat
+
+- Get Many
+
+### Contact
+
+- Get Many
+
 ### Recipient
 
 - Get Limits
+
+### Event
+
+- Get
+- Get Many
+
+### Group
+
+- Get Many
+
+### History Sync
+
+- Get Status
+- Fetch
 
 ### Webhook Delivery
 
@@ -126,3 +154,14 @@ El nodo ya queda marcado con `usableAsTool: true`, así que el siguiente paso na
 1. Exponer las operaciones más útiles como Tool en el flujo/agente.
 2. Mantener `Custom API Request` para cubrir endpoints nuevos sin rehacer el nodo.
 3. Si más adelante la API añade registro dinámico de webhooks, valorar un trigger dedicado o una capa MCP más declarativa.
+
+## Trigger
+
+El paquete incluye ya un `Baileys Trigger` en modo **polling sobre `/events`**.
+
+No se recomienda que la primera version del trigger dependa de un webhook fijo compartido por cuenta, porque la API actual no registra webhooks por endpoint y ese patron complica mucho la propiedad de cada workflow.
+
+Documentacion preparada:
+
+- [Trigger architecture](./docs/TRIGGER_ARCHITECTURE.md)
+- [Trigger implementation spec](./docs/TRIGGER_IMPLEMENTATION_SPEC.md)

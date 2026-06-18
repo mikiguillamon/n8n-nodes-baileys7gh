@@ -32,8 +32,13 @@ const resourceProperty: INodeProperties = {
 	default: 'instance',
 	options: [
 		{ name: 'Batch', value: 'batch' },
+		{ name: 'Chat', value: 'chat' },
 		{ name: 'Consent', value: 'consent' },
+		{ name: 'Contact', value: 'contact' },
 		{ name: 'Custom API Request', value: 'customApiRequest' },
+		{ name: 'Event', value: 'event' },
+		{ name: 'Group', value: 'group' },
+		{ name: 'History Sync', value: 'historySync' },
 		{ name: 'Instance', value: 'instance' },
 		{ name: 'Message', value: 'message' },
 		{ name: 'Recipient', value: 'recipient' },
@@ -219,6 +224,88 @@ const consentOperations: INodeProperties = {
 	],
 };
 
+const chatOperations: INodeProperties = {
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	default: 'getMany',
+	displayOptions: {
+		show: { resource: ['chat'] },
+	},
+	options: [
+		{
+			name: 'Get Many',
+			value: 'getMany',
+			description: 'List persisted chat snapshots',
+			action: 'Get many a chat',
+		},
+	],
+};
+
+const contactOperations: INodeProperties = {
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	default: 'getMany',
+	displayOptions: {
+		show: { resource: ['contact'] },
+	},
+	options: [
+		{
+			name: 'Get Many',
+			value: 'getMany',
+			description: 'List persisted contact snapshots',
+			action: 'Get many a contact',
+		},
+	],
+};
+
+const groupOperations: INodeProperties = {
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	default: 'getMany',
+	displayOptions: {
+		show: { resource: ['group'] },
+	},
+	options: [
+		{
+			name: 'Get Many',
+			value: 'getMany',
+			description: 'List persisted group snapshots',
+			action: 'Get many a group',
+		},
+	],
+};
+
+const historySyncOperations: INodeProperties = {
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	default: 'getStatus',
+	displayOptions: {
+		show: { resource: ['historySync'] },
+	},
+	options: [
+		{
+			name: 'Fetch',
+			value: 'fetch',
+			description: 'Fetch older messages on demand starting from a reference message',
+			action: 'Fetch a history sync',
+		},
+		{
+			name: 'Get Status',
+			value: 'getStatus',
+			description: 'Get the current history sync status',
+			action: 'Get status a history sync',
+		},
+	],
+};
+
 const recipientOperations: INodeProperties = {
 	displayName: 'Operation',
 	name: 'operation',
@@ -259,6 +346,31 @@ const webhookDeliveryOperations: INodeProperties = {
 			value: 'retry',
 			description: 'Retry a failed delivery',
 			action: 'Retry webhook delivery',
+		},
+	],
+};
+
+const eventOperations: INodeProperties = {
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	default: 'getMany',
+	displayOptions: {
+		show: { resource: ['event'] },
+	},
+	options: [
+		{
+			name: 'Get',
+			value: 'get',
+			description: 'Get a single persisted event by ID',
+			action: 'Get an event',
+		},
+		{
+			name: 'Get Many',
+			value: 'getMany',
+			description: 'List persisted events with filters',
+			action: 'Get many an event',
 		},
 	],
 };
@@ -756,6 +868,89 @@ const operationProperties: INodeProperties[] = [
 		],
 	},
 	{
+		displayName: 'Filters',
+		name: 'snapshotFilters',
+		type: 'collection',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['chat', 'contact', 'group'],
+				operation: ['getMany'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				default: 50,
+				description: 'Max number of results to return',
+				typeOptions: { minValue: 1, maxValue: 100 },
+			},
+		],
+	},
+	{
+		displayName: 'Chat JID',
+		name: 'historySyncChatJid',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: { resource: ['historySync'], operation: ['fetch'] },
+		},
+	},
+	{
+		displayName: 'Count',
+		name: 'historySyncCount',
+		type: 'number',
+		default: 50,
+		typeOptions: {
+			minValue: 1,
+			maxValue: 200,
+		},
+		displayOptions: {
+			show: { resource: ['historySync'], operation: ['fetch'] },
+		},
+	},
+	{
+		displayName: 'Oldest Message ID',
+		name: 'historySyncOldestMessageId',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: { resource: ['historySync'], operation: ['fetch'] },
+		},
+	},
+	{
+		displayName: 'Additional Options',
+		name: 'historySyncAdditionalOptions',
+		type: 'collection',
+		default: {},
+		displayOptions: {
+			show: { resource: ['historySync'], operation: ['fetch'] },
+		},
+		options: [
+			{
+				displayName: 'From Me',
+				name: 'fromMe',
+				type: 'boolean',
+				default: false,
+			},
+			{
+				displayName: 'Oldest Message Timestamp',
+				name: 'oldestMessageTimestamp',
+				type: 'number',
+				default: 0,
+				description: 'Unix timestamp in seconds when the oldest message is not present locally',
+			},
+			{
+				displayName: 'Participant',
+				name: 'participant',
+				type: 'string',
+				default: '',
+			},
+		],
+	},
+	{
 		displayName: 'JID',
 		name: 'limitsJid',
 		type: 'string',
@@ -787,6 +982,37 @@ const operationProperties: INodeProperties[] = [
 																																										description: 'Max number of results to return', default: 50, typeOptions: { minValue: 1, maxValue: 100 } },
 			{ displayName: 'Since', name: 'since', type: 'dateTime', default: '' },
 			{ displayName: 'Status', name: 'status', type: 'string', default: '' },
+		],
+	},
+	{
+		displayName: 'Event ID',
+		name: 'eventId',
+		type: 'string',
+		default: '',
+		displayOptions: {
+			show: { resource: ['event'], operation: ['get'] },
+		},
+	},
+	{
+		displayName: 'Filters',
+		name: 'eventFilters',
+		type: 'collection',
+		default: {},
+		displayOptions: {
+			show: { resource: ['event'], operation: ['getMany'] },
+		},
+		options: [
+			{ displayName: 'Entity Type', name: 'entityType', type: 'string', default: '' },
+			{ displayName: 'Event Type', name: 'eventType', type: 'string', default: '' },
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				default: 50,
+				description: 'Max number of results to return',
+				typeOptions: { minValue: 1, maxValue: 100 },
+			},
+			{ displayName: 'Message ID', name: 'messageId', type: 'string', default: '' },
 		],
 	},
 	{
@@ -931,7 +1157,12 @@ export class BaileysInstance implements INodeType {
 			instanceOperations,
 			messageOperations,
 			batchOperations,
+			chatOperations,
+			contactOperations,
 			consentOperations,
+			eventOperations,
+			groupOperations,
+			historySyncOperations,
 			recipientOperations,
 			webhookDeliveryOperations,
 			customApiRequestOperations,
@@ -956,8 +1187,18 @@ export class BaileysInstance implements INodeType {
 					responseData = await executeMessageOperation.call(this, itemIndex, operation);
 				} else if (resource === 'batch') {
 					responseData = await executeBatchOperation.call(this, itemIndex, operation);
+				} else if (resource === 'chat') {
+					responseData = await executeSnapshotOperation.call(this, itemIndex, operation, 'chat');
+				} else if (resource === 'contact') {
+					responseData = await executeSnapshotOperation.call(this, itemIndex, operation, 'contact');
 				} else if (resource === 'consent') {
 					responseData = await executeConsentOperation.call(this, itemIndex, operation);
+				} else if (resource === 'event') {
+					responseData = await executeEventOperation.call(this, itemIndex, operation);
+				} else if (resource === 'group') {
+					responseData = await executeSnapshotOperation.call(this, itemIndex, operation, 'group');
+				} else if (resource === 'historySync') {
+					responseData = await executeHistorySyncOperation.call(this, itemIndex, operation);
 				} else if (resource === 'recipient') {
 					responseData = await executeRecipientOperation.call(this, itemIndex, operation);
 				} else if (resource === 'webhookDelivery') {
@@ -1252,6 +1493,72 @@ async function executeConsentOperation(
 	});
 }
 
+async function executeSnapshotOperation(
+	this: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+	resource: 'chat' | 'contact' | 'group',
+): Promise<unknown> {
+	if (operation !== 'getMany') {
+		throw new NodeOperationError(this.getNode(), `Unsupported ${resource} operation "${operation}"`, {
+			itemIndex,
+		});
+	}
+
+	const filters = this.getNodeParameter('snapshotFilters', itemIndex, {}) as IDataObject;
+	const pathMap: Record<'chat' | 'contact' | 'group', string> = {
+		chat: '/chats',
+		contact: '/contacts',
+		group: '/groups',
+	};
+
+	return await baileysRequest.call(this, itemIndex, {
+		method: 'GET',
+		path: pathMap[resource],
+		qs: cleanObject({
+			limit: filters.limit as number | undefined,
+		}),
+	});
+}
+
+async function executeHistorySyncOperation(
+	this: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+): Promise<unknown> {
+	if (operation === 'getStatus') {
+		return await baileysRequest.call(this, itemIndex, {
+			method: 'GET',
+			path: '/history-sync/status',
+		});
+	}
+
+	if (operation === 'fetch') {
+		const additionalOptions = this.getNodeParameter(
+			'historySyncAdditionalOptions',
+			itemIndex,
+			{},
+		) as IDataObject;
+
+		return await baileysRequest.call(this, itemIndex, {
+			method: 'POST',
+			path: '/history-sync/fetch',
+			body: cleanObject({
+				count: this.getNodeParameter('historySyncCount', itemIndex) as number,
+				chat_jid: this.getNodeParameter('historySyncChatJid', itemIndex) as string,
+				oldest_message_id: this.getNodeParameter('historySyncOldestMessageId', itemIndex) as string,
+				oldest_message_timestamp: getOptionalPositiveNumber(additionalOptions.oldestMessageTimestamp),
+				participant: getOptionalString(additionalOptions.participant),
+				from_me: additionalOptions.fromMe === true ? true : undefined,
+			}),
+		});
+	}
+
+	throw new NodeOperationError(this.getNode(), `Unsupported history sync operation "${operation}"`, {
+		itemIndex,
+	});
+}
+
 async function executeRecipientOperation(
 	this: IExecuteFunctions,
 	itemIndex: number,
@@ -1267,6 +1574,38 @@ async function executeRecipientOperation(
 	return await baileysRequest.call(this, itemIndex, {
 		method: 'GET',
 		path: `/limits/${encodeURIComponent(jid)}`,
+	});
+}
+
+async function executeEventOperation(
+	this: IExecuteFunctions,
+	itemIndex: number,
+	operation: string,
+): Promise<unknown> {
+	if (operation === 'get') {
+		const eventId = this.getNodeParameter('eventId', itemIndex) as string;
+		return await baileysRequest.call(this, itemIndex, {
+			method: 'GET',
+			path: `/events/${encodeURIComponent(eventId)}`,
+		});
+	}
+
+	if (operation === 'getMany') {
+		const filters = this.getNodeParameter('eventFilters', itemIndex, {}) as IDataObject;
+		return await baileysRequest.call(this, itemIndex, {
+			method: 'GET',
+			path: '/events',
+			qs: cleanObject({
+				event_type: getOptionalString(filters.eventType),
+				entity_type: getOptionalString(filters.entityType),
+				message_id: getOptionalString(filters.messageId),
+				limit: filters.limit as number | undefined,
+			}),
+		});
+	}
+
+	throw new NodeOperationError(this.getNode(), `Unsupported event operation "${operation}"`, {
+		itemIndex,
 	});
 }
 
@@ -1579,6 +1918,14 @@ function getOptionalNumber(value: unknown): number | undefined {
 	if (typeof value !== 'number' || Number.isNaN(value) || value <= 0) {
 		return undefined;
 	}
+	return value;
+}
+
+function getOptionalPositiveNumber(value: unknown): number | undefined {
+	if (typeof value !== 'number' || Number.isNaN(value) || value <= 0) {
+		return undefined;
+	}
+
 	return value;
 }
 
