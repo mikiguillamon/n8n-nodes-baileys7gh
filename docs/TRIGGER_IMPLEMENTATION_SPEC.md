@@ -7,6 +7,7 @@
 ## Node type
 
 - `polling trigger`
+- not a webhook-registration trigger
 
 ## Source endpoint
 
@@ -134,29 +135,17 @@ or:
 - empty results should return no items without error
 - malformed payloads should surface as `NodeApiError`
 
-## Future-compatible helper extraction
+## Positioning
 
-Before implementing the trigger, extract shared transport logic from the main node into reusable helpers:
+- `Baileys Trigger` is the built-in option for polling persisted events from `/events`.
+- Realtime inbound delivery should use `wa-instance -> WEBHOOK_URL -> n8n Webhook`.
+- The trigger must not imply webhook lifecycle registration support that the backend does not expose.
 
-- `nodes/BaileysInstance/transport/request.ts`
-- `nodes/BaileysInstance/transport/helpers.ts`
-- `nodes/BaileysInstance/transport/errors.ts`
+## Implementation notes
 
-The trigger should reuse the same:
-
-- base URL normalization
-- credential handling
-- TLS setting handling
-- error mapping
-
-## Recommended implementation tasks
-
-1. Extract HTTP transport from `BaileysInstance.node.ts`
-2. Add `/events` support to the main action node as an `Event` resource
-3. Implement `BaileysTrigger.node.ts`
-4. Register trigger node in `package.json`
-5. Add README section with trigger examples
-6. Test first-run and dedup behavior
+- The trigger can share the same transport conventions as the main node even if helpers remain in-file during this parity pass.
+- `/events` support already exists in the main action node and should stay aligned with the trigger filters.
+- README and docs must describe the trigger as polling and keep webhook ingress as a separate pattern.
 
 ## Optional advanced pattern to document
 

@@ -1,6 +1,6 @@
 {
     "name": "n8n-nodes-baileys-instance",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "n8n community node for the wa-instance API built on top of Baileys 7.",
     "license": "MIT",
     "homepage": "https://github.com/mikiguillamon/n8n-nodes-baileys7gh",

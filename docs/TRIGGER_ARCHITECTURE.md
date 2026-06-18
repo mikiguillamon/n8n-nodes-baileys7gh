@@ -2,7 +2,7 @@
 
 ## Decision
 
-Add a native `Baileys Trigger` node, but implement it in **polling mode first**, not as a webhook-registration trigger.
+Keep the native `Baileys Trigger` node in **polling mode**, and keep realtime webhook ingestion as a documented pattern using n8n's native `Webhook` node.
 
 ## Why
 
@@ -15,7 +15,7 @@ The current `wa-instance` API:
 
 Because of that, a classic n8n trigger with activate/deactivate registration is not a good fit yet.
 
-## Recommended v1
+## Recommended trigger behavior
 
 Create a trigger node that:
 
@@ -44,19 +44,19 @@ That pattern is still useful, but it should be treated as an **advanced integrat
 
 ## Recommended product stance
 
-### Primary trigger mode
+### Built-in trigger mode
 
 `Baileys Trigger` using polling over `/events`
 
-### Advanced alternative
+### Recommended realtime ingress
 
 Documented "shared ingress" pattern:
 
 - `wa-instance` -> fixed backend `WEBHOOK_URL`
-- one n8n `Webhook` workflow receives all events
+- one n8n `Webhook` workflow receives all events pushed by `wa-instance`
 - a router workflow dispatches by `event_type`, `instance_id`, or business rules
 
-## Scope for v1 trigger
+## Scope for the shipped trigger
 
 Include:
 
@@ -68,13 +68,13 @@ Include:
 - dedup by `event_id`
 - optional "emit only newest on first run" behavior
 
-Do not include yet:
+Do not include:
 
 - dynamic webhook registration
 - multiple trigger modes in the same node
 - shared static webhook orchestration inside the node
 
-## Future v2
+## Future evolution
 
 If the backend later exposes endpoints such as:
 
@@ -91,4 +91,3 @@ At that point the trigger node can decide between:
 
 - `Polling`
 - `Managed Webhook`
-
