@@ -1,8 +1,13 @@
 {
   "features": [
     {
+      "id": "001-baileys-node-parity",
+      "status": "in_progress",
+      "sdd": true
+    },
+    {
       "id": "baseline_existing_project",
-      "status": "pending",
+      "status": "done",
       "sdd": false
     }
   ]

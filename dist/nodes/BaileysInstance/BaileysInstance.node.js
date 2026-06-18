@@ -19,394 +19,421 @@ const resourceProperty = {
         { name: 'History Sync', value: 'historySync' },
         { name: 'Instance', value: 'instance' },
         { name: 'Message', value: 'message' },
+        { name: 'Privacy', value: 'privacy' },
         { name: 'Recipient', value: 'recipient' },
         { name: 'Webhook Delivery', value: 'webhookDelivery' },
     ],
 };
-const instanceOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getHealth',
-    displayOptions: {
-        show: { resource: ['instance'] },
+const instanceOperations = createOperationProperty('instance', 'getHealth', [
+    {
+        name: 'Get Health',
+        value: 'getHealth',
+        description: 'Run a basic smoke check against the instance',
+        action: 'Get instance health',
     },
-    options: [
-        {
-            name: 'Get Dependencies Health',
-            value: 'getDependenciesHealth',
-            description: 'Check Postgres, Redis, MinIO and WhatsApp readiness',
-            action: 'Get dependencies health an instance',
-        },
-        {
-            name: 'Get Health',
-            value: 'getHealth',
-            description: 'Run a basic smoke check against the instance',
-            action: 'Get health an instance',
-        },
-        {
-            name: 'Get Pairing QR',
-            value: 'getPairingQr',
-            description: 'Fetch the current QR when the instance is in QR pairing mode',
-            action: 'Get pairing qr an instance',
-        },
-        {
-            name: 'Get Queue Status',
-            value: 'getQueueStatus',
-            description: 'Inspect outbound and webhook queue health',
-            action: 'Get queue status an instance',
-        },
-        {
-            name: 'Get Status',
-            value: 'getStatus',
-            description: 'Read current WhatsApp session state',
-            action: 'Get status an instance',
-        },
-        {
-            name: 'Logout Session',
-            value: 'logoutSession',
-            description: 'Logout the current session and optionally purge auth',
-            action: 'Logout session an instance',
-        },
-        {
-            name: 'Request Pairing Code',
-            value: 'requestPairingCode',
-            description: 'Request a pairing code when the instance is in code pairing mode',
-            action: 'Request pairing code an instance',
-        },
-        {
-            name: 'Send Webhook Test',
-            value: 'sendWebhookTest',
-            description: 'Trigger a webhook test event from the backend',
-            action: 'Send webhook test an instance',
-        },
-    ],
-};
-const messageOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'sendText',
-    displayOptions: {
-        show: { resource: ['message'] },
+    {
+        name: 'Get Dependencies Health',
+        value: 'getDependenciesHealth',
+        description: 'Check Postgres, Redis, MinIO and WhatsApp readiness',
+        action: 'Get instance dependencies health',
     },
-    options: [
-        {
-            name: 'Delete',
-            value: 'delete',
-            description: 'Delete a message by ID',
-            action: 'Delete a message',
-        },
-        {
-            name: 'Edit',
-            value: 'edit',
-            description: 'Edit a message by ID',
-            action: 'Edit a message',
-        },
-        {
-            name: 'Forward',
-            value: 'forward',
-            description: 'Forward a message to another recipient',
-            action: 'Forward a message',
-        },
-        {
-            name: 'Get',
-            value: 'get',
-            description: 'Get a single outbound message by ID',
-            action: 'Get a message',
-        },
-        {
-            name: 'Get Inbound Message',
-            value: 'getInboundMessage',
-            description: 'Inspect a persisted inbound message by ID',
-            action: 'Get inbound message a message',
-        },
-        {
-            name: 'Get Many',
-            value: 'getMany',
-            description: 'List outbound messages with filters',
-            action: 'Get many a message',
-        },
-        {
-            name: 'Mark Read',
-            value: 'markRead',
-            description: 'Mark one or more message keys as read',
-            action: 'Mark read a message',
-        },
-        {
-            name: 'Preview Send',
-            value: 'previewSend',
-            description: 'Validate policy and normalization without sending',
-            action: 'Preview send a message',
-        },
-        {
-            name: 'React',
-            value: 'react',
-            description: 'React to a message by ID',
-            action: 'React a message',
-        },
-        {
-            name: 'Refresh Media',
-            value: 'refreshMedia',
-            description: 'Refresh media for a persisted message',
-            action: 'Refresh media a message',
-        },
-        {
-            name: 'Reply',
-            value: 'reply',
-            description: 'Reply to a message by ID',
-            action: 'Reply a message',
-        },
-        {
-            name: 'Send Media',
-            value: 'sendMedia',
-            description: 'Send a single media message',
-            action: 'Send media a message',
-        },
-        {
-            name: 'Send Receipts',
-            value: 'sendReceipts',
-            description: 'Send receipts for one or more messages',
-            action: 'Send receipts a message',
-        },
-        {
-            name: 'Send Text',
-            value: 'sendText',
-            description: 'Send one text or a text sequence',
-            action: 'Send text a message',
-        },
-    ],
-};
-const batchOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'sendTextBatch',
-    displayOptions: {
-        show: { resource: ['batch'] },
+    {
+        name: 'Get Status',
+        value: 'getStatus',
+        description: 'Read the current WhatsApp session state',
+        action: 'Get instance status',
     },
-    options: [
-        {
-            name: 'Get',
-            value: 'get',
-            description: 'Get a batch by ID',
-            action: 'Get a batch',
-        },
-        {
-            name: 'Preview Batch',
-            value: 'previewBatch',
-            description: 'Validate a batch without sending',
-            action: 'Preview batch a batch',
-        },
-        {
-            name: 'Send Media Batch',
-            value: 'sendMediaBatch',
-            description: 'Queue a homogeneous media batch',
-            action: 'Send media batch a batch',
-        },
-        {
-            name: 'Send Text Batch',
-            value: 'sendTextBatch',
-            description: 'Queue a homogeneous text batch',
-            action: 'Send text batch a batch',
-        },
-    ],
-};
-const consentOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'upsert',
-    displayOptions: {
-        show: { resource: ['consent'] },
+    {
+        name: 'Get Queue Status',
+        value: 'getQueueStatus',
+        description: 'Inspect outbound and webhook queue health',
+        action: 'Get instance queue status',
     },
-    options: [
-        {
-            name: 'Get',
-            value: 'get',
-            description: 'Get the current consent record for a JID',
-            action: 'Get a consent',
-        },
-        {
-            name: 'Revoke',
-            value: 'revoke',
-            description: 'Revoke consent for a JID',
-            action: 'Revoke a consent',
-        },
-        {
-            name: 'Create or Update',
-            value: 'upsert',
-            description: 'Create a new record, or update the current one if it already exists (upsert)',
-            action: 'Upsert a consent',
-        },
-    ],
-};
-const chatOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getMany',
-    displayOptions: {
-        show: { resource: ['chat'] },
+    {
+        name: 'Get Pairing QR',
+        value: 'getPairingQr',
+        description: 'Fetch the current QR when the instance is in QR pairing mode',
+        action: 'Get pairing qr',
     },
-    options: [
-        {
-            name: 'Get Many',
-            value: 'getMany',
-            description: 'List persisted chat snapshots',
-            action: 'Get many a chat',
-        },
-    ],
-};
-const contactOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getMany',
-    displayOptions: {
-        show: { resource: ['contact'] },
+    {
+        name: 'Request Pairing Code',
+        value: 'requestPairingCode',
+        description: 'Request a pairing code when the instance is in code pairing mode',
+        action: 'Request pairing code',
     },
-    options: [
-        {
-            name: 'Get Many',
-            value: 'getMany',
-            description: 'List persisted contact snapshots',
-            action: 'Get many a contact',
-        },
-    ],
-};
-const groupOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getMany',
-    displayOptions: {
-        show: { resource: ['group'] },
+    {
+        name: 'Logout Session',
+        value: 'logoutSession',
+        description: 'Logout the current session and optionally purge auth',
+        action: 'Logout session',
     },
-    options: [
-        {
-            name: 'Get Many',
-            value: 'getMany',
-            description: 'List persisted group snapshots',
-            action: 'Get many a group',
-        },
-    ],
-};
-const historySyncOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getStatus',
-    displayOptions: {
-        show: { resource: ['historySync'] },
+    {
+        name: 'Send Webhook Test',
+        value: 'sendWebhookTest',
+        description: 'Trigger a webhook test event from the backend',
+        action: 'Send webhook test',
     },
-    options: [
-        {
-            name: 'Fetch',
-            value: 'fetch',
-            description: 'Fetch older messages on demand starting from a reference message',
-            action: 'Fetch a history sync',
-        },
-        {
-            name: 'Get Status',
-            value: 'getStatus',
-            description: 'Get the current history sync status',
-            action: 'Get status a history sync',
-        },
-    ],
-};
-const recipientOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getLimits',
-    displayOptions: {
-        show: { resource: ['recipient'] },
+]);
+const historySyncOperations = createOperationProperty('historySync', 'getStatus', [
+    {
+        name: 'Get Status',
+        value: 'getStatus',
+        description: 'Get the current history sync status',
+        action: 'Get history sync status',
     },
-    options: [
-        {
-            name: 'Get Limits',
-            value: 'getLimits',
-            description: 'Read policy and operational limits for a recipient',
-            action: 'Get limits a recipient',
-        },
-    ],
-};
-const webhookDeliveryOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getMany',
-    displayOptions: {
-        show: { resource: ['webhookDelivery'] },
+    {
+        name: 'Fetch',
+        value: 'fetch',
+        description: 'Fetch older messages on demand from a reference message',
+        action: 'Fetch history sync',
     },
-    options: [
-        {
-            name: 'Get Many',
-            value: 'getMany',
-            description: 'List webhook deliveries with filters',
-            action: 'Get many a webhook delivery',
-        },
-        {
-            name: 'Retry',
-            value: 'retry',
-            description: 'Retry a failed delivery',
-            action: 'Retry webhook delivery',
-        },
-    ],
-};
-const eventOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'getMany',
-    displayOptions: {
-        show: { resource: ['event'] },
+]);
+const eventOperations = createOperationProperty('event', 'getMany', [
+    {
+        name: 'Get Many',
+        value: 'getMany',
+        description: 'List persisted events with filters',
+        action: 'Get many events',
     },
-    options: [
-        {
-            name: 'Get',
-            value: 'get',
-            description: 'Get a single persisted event by ID',
-            action: 'Get an event',
-        },
-        {
-            name: 'Get Many',
-            value: 'getMany',
-            description: 'List persisted events with filters',
-            action: 'Get many an event',
-        },
-    ],
-};
-const customApiRequestOperations = {
-    displayName: 'Operation',
-    name: 'operation',
-    type: 'options',
-    noDataExpression: true,
-    default: 'execute',
-    displayOptions: {
-        show: { resource: ['customApiRequest'] },
+    {
+        name: 'Get',
+        value: 'get',
+        description: 'Get a single persisted event by ID',
+        action: 'Get event',
     },
-    options: [
-        {
-            name: 'Execute',
-            value: 'execute',
-            description: 'Call a relative path on the wa-instance API',
-            action: 'Execute a custom api request',
-        },
-    ],
-};
+]);
+const chatOperations = createOperationProperty('chat', 'getMany', [
+    {
+        name: 'Get Many',
+        value: 'getMany',
+        description: 'List persisted chat snapshots',
+        action: 'Get many chats',
+    },
+    {
+        name: 'Archive',
+        value: 'archive',
+        description: 'Archive or unarchive a chat',
+        action: 'Archive chat',
+    },
+    {
+        name: 'Mute',
+        value: 'mute',
+        description: 'Mute until a date or unmute a chat',
+        action: 'Mute chat',
+    },
+    {
+        name: 'Set Read State',
+        value: 'setReadState',
+        description: 'Set the read state for a chat',
+        action: 'Set chat read state',
+    },
+]);
+const contactOperations = createOperationProperty('contact', 'getMany', [
+    {
+        name: 'Get Many',
+        value: 'getMany',
+        description: 'List persisted contact snapshots',
+        action: 'Get many contacts',
+    },
+]);
+const groupOperations = createOperationProperty('group', 'getMany', [
+    {
+        name: 'Get Many',
+        value: 'getMany',
+        description: 'List persisted group snapshots',
+        action: 'Get many groups',
+    },
+    {
+        name: 'Get',
+        value: 'get',
+        description: 'Get a single group snapshot by JID',
+        action: 'Get group',
+    },
+    {
+        name: 'Create',
+        value: 'create',
+        description: 'Create a group with a subject and participants',
+        action: 'Create group',
+    },
+    {
+        name: 'Join',
+        value: 'join',
+        description: 'Join a group through an invite code',
+        action: 'Join group',
+    },
+    {
+        name: 'Update Subject',
+        value: 'updateSubject',
+        description: 'Update the group subject',
+        action: 'Update group subject',
+    },
+    {
+        name: 'Update Description',
+        value: 'updateDescription',
+        description: 'Update the group description',
+        action: 'Update group description',
+    },
+    {
+        name: 'Update Participants',
+        value: 'updateParticipants',
+        description: 'Add, remove, promote or demote participants',
+        action: 'Update group participants',
+    },
+    {
+        name: 'Update Participant Requests',
+        value: 'updateParticipantRequests',
+        description: 'Approve or reject participant requests',
+        action: 'Update group participant requests',
+    },
+    {
+        name: 'Get Invite Code',
+        value: 'getInviteCode',
+        description: 'Get the current invite code',
+        action: 'Get group invite code',
+    },
+    {
+        name: 'Revoke Invite Code',
+        value: 'revokeInviteCode',
+        description: 'Revoke the current invite code',
+        action: 'Revoke group invite code',
+    },
+    {
+        name: 'Update Settings',
+        value: 'updateSettings',
+        description: 'Update one or more group settings',
+        action: 'Update group settings',
+    },
+    {
+        name: 'Update Ephemeral',
+        value: 'updateEphemeral',
+        description: 'Update the group ephemeral expiration',
+        action: 'Update group ephemeral mode',
+    },
+]);
+const messageOperations = createOperationProperty('message', 'sendText', [
+    {
+        name: 'Send Text',
+        value: 'sendText',
+        description: 'Send one text or a text sequence',
+        action: 'Send text',
+    },
+    {
+        name: 'Send Media',
+        value: 'sendMedia',
+        description: 'Send a single media message',
+        action: 'Send media',
+    },
+    {
+        name: 'Preview Send',
+        value: 'previewSend',
+        description: 'Validate policy and normalization without sending',
+        action: 'Preview send',
+    },
+    {
+        name: 'Get',
+        value: 'get',
+        description: 'Get a single outbound message by ID',
+        action: 'Get message',
+    },
+    {
+        name: 'Get Many',
+        value: 'getMany',
+        description: 'List outbound messages with filters',
+        action: 'Get many messages',
+    },
+    {
+        name: 'Get Inbound Message',
+        value: 'getInboundMessage',
+        description: 'Inspect a persisted inbound message by ID',
+        action: 'Get inbound message',
+    },
+    {
+        name: 'Reply',
+        value: 'reply',
+        description: 'Reply to a persisted message by ID',
+        action: 'Reply to message',
+    },
+    {
+        name: 'Forward',
+        value: 'forward',
+        description: 'Forward a message to another recipient',
+        action: 'Forward message',
+    },
+    {
+        name: 'Delete',
+        value: 'delete',
+        description: 'Delete a message by ID',
+        action: 'Delete message',
+    },
+    {
+        name: 'Edit',
+        value: 'edit',
+        description: 'Edit a message by ID',
+        action: 'Edit message',
+    },
+    {
+        name: 'React',
+        value: 'react',
+        description: 'React to a message by ID',
+        action: 'React to message',
+    },
+    {
+        name: 'Mark Read',
+        value: 'markRead',
+        description: 'Mark one or more message keys as read',
+        action: 'Mark messages read',
+    },
+    {
+        name: 'Send Receipts',
+        value: 'sendReceipts',
+        description: 'Send receipts for one or more messages',
+        action: 'Send message receipts',
+    },
+    {
+        name: 'Refresh Media',
+        value: 'refreshMedia',
+        description: 'Refresh media for a persisted message',
+        action: 'Refresh message media',
+    },
+]);
+const batchOperations = createOperationProperty('batch', 'sendTextBatch', [
+    {
+        name: 'Send Text Batch',
+        value: 'sendTextBatch',
+        description: 'Queue a homogeneous text batch',
+        action: 'Send text batch',
+    },
+    {
+        name: 'Send Media Batch',
+        value: 'sendMediaBatch',
+        description: 'Queue a homogeneous media batch',
+        action: 'Send media batch',
+    },
+    {
+        name: 'Preview Batch',
+        value: 'previewBatch',
+        description: 'Validate a batch without sending',
+        action: 'Preview batch',
+    },
+    {
+        name: 'Get',
+        value: 'get',
+        description: 'Get a batch by ID',
+        action: 'Get batch',
+    },
+]);
+const consentOperations = createOperationProperty('consent', 'upsert', [
+    {
+        name: 'Create or Update',
+        value: 'upsert',
+        description: 'Create a new record, or update the current one if it already exists (upsert)',
+        action: 'Upsert consent',
+    },
+    {
+        name: 'Revoke',
+        value: 'revoke',
+        description: 'Revoke consent for a JID',
+        action: 'Revoke consent',
+    },
+    {
+        name: 'Get',
+        value: 'get',
+        description: 'Get the current consent record for a JID',
+        action: 'Get consent',
+    },
+]);
+const recipientOperations = createOperationProperty('recipient', 'getLimits', [
+    {
+        name: 'Get Limits',
+        value: 'getLimits',
+        description: 'Read policy and operational limits for a recipient',
+        action: 'Get recipient limits',
+    },
+]);
+const privacyOperations = createOperationProperty('privacy', 'getSettings', [
+    {
+        name: 'Get Settings',
+        value: 'getSettings',
+        description: 'Get current privacy settings',
+        action: 'Get privacy settings',
+    },
+    {
+        name: 'Get Blocklist',
+        value: 'getBlocklist',
+        description: 'Get the current privacy blocklist',
+        action: 'Get privacy blocklist',
+    },
+    {
+        name: 'Update Block Status',
+        value: 'updateBlockStatus',
+        description: 'Block or unblock a JID',
+        action: 'Update privacy block status',
+    },
+    {
+        name: 'Update Last Seen',
+        value: 'updateLastSeen',
+        description: 'Update last seen visibility',
+        action: 'Update last seen privacy',
+    },
+    {
+        name: 'Update Online',
+        value: 'updateOnline',
+        description: 'Update online visibility',
+        action: 'Update online privacy',
+    },
+    {
+        name: 'Update Profile Photo',
+        value: 'updateProfilePhoto',
+        description: 'Update profile photo privacy',
+        action: 'Update profile photo privacy',
+    },
+    {
+        name: 'Update Status',
+        value: 'updateStatus',
+        description: 'Update status privacy',
+        action: 'Update status privacy',
+    },
+    {
+        name: 'Update Groups Add',
+        value: 'updateGroupsAdd',
+        description: 'Update who can add this account to groups',
+        action: 'Update groups add privacy',
+    },
+    {
+        name: 'Update Read Receipts',
+        value: 'updateReadReceipts',
+        description: 'Update read receipts privacy',
+        action: 'Update read receipts privacy',
+    },
+    {
+        name: 'Update Default Disappearing Mode',
+        value: 'updateDefaultDisappearingMode',
+        description: 'Update the default disappearing mode duration in seconds',
+        action: 'Update default disappearing mode',
+    },
+]);
+const webhookDeliveryOperations = createOperationProperty('webhookDelivery', 'getMany', [
+    {
+        name: 'Get Many',
+        value: 'getMany',
+        description: 'List webhook deliveries with filters',
+        action: 'Get many webhook deliveries',
+    },
+    {
+        name: 'Retry',
+        value: 'retry',
+        description: 'Retry a webhook delivery',
+        action: 'Retry webhook delivery',
+    },
+]);
+const customApiRequestOperations = createOperationProperty('customApiRequest', 'execute', [
+    {
+        name: 'Execute',
+        value: 'execute',
+        description: 'Call a relative path on the wa-instance API',
+        action: 'Execute custom API request',
+    },
+]);
 const operationProperties = [
     {
         displayName: 'Phone Number',
@@ -483,9 +510,7 @@ const operationProperties = [
         name: 'text',
         type: 'string',
         default: '',
-        typeOptions: {
-            rows: 3,
-        },
+        typeOptions: { rows: 3 },
         displayOptions: {
             show: {
                 resource: ['message'],
@@ -498,9 +523,7 @@ const operationProperties = [
         displayName: 'Texts',
         name: 'texts',
         type: 'fixedCollection',
-        typeOptions: {
-            multipleValues: true,
-        },
+        typeOptions: { multipleValues: true },
         default: {},
         description: 'Ordered sequence of text messages',
         displayOptions: {
@@ -520,9 +543,7 @@ const operationProperties = [
                         name: 'text',
                         type: 'string',
                         default: '',
-                        typeOptions: {
-                            rows: 2,
-                        },
+                        typeOptions: { rows: 2 },
                     },
                 ],
             },
@@ -534,8 +555,8 @@ const operationProperties = [
         type: 'options',
         default: 'text',
         options: [
-            { name: 'Media', value: 'media' },
             { name: 'Text', value: 'text' },
+            { name: 'Media', value: 'media' },
         ],
         displayOptions: {
             show: { resource: ['message'], operation: ['previewSend'] },
@@ -574,30 +595,10 @@ const operationProperties = [
             show: { resource: ['message'], operation: ['sendText', 'sendMedia'] },
         },
         options: [
-            {
-                displayName: 'Audio Duration (Ms)',
-                name: 'audioDurationMs',
-                type: 'number',
-                default: 0,
-            },
-            {
-                displayName: 'Caption',
-                name: 'caption',
-                type: 'string',
-                default: '',
-            },
-            {
-                displayName: 'Client Ref',
-                name: 'clientRef',
-                type: 'string',
-                default: '',
-            },
-            {
-                displayName: 'File Name',
-                name: 'fileName',
-                type: 'string',
-                default: '',
-            },
+            { displayName: 'Audio Duration (Ms)', name: 'audioDurationMs', type: 'number', default: 0 },
+            { displayName: 'Caption', name: 'caption', type: 'string', default: '' },
+            { displayName: 'Client Ref', name: 'clientRef', type: 'string', default: '' },
+            { displayName: 'File Name', name: 'fileName', type: 'string', default: '' },
             {
                 displayName: 'Generate Automatically',
                 name: 'generateIdempotencyKey',
@@ -605,18 +606,8 @@ const operationProperties = [
                 default: true,
                 description: 'Whether to generate a unique X-Idempotency-Key per n8n item when no manual key is provided',
             },
-            {
-                displayName: 'Idempotency Key',
-                name: 'idempotencyKey',
-                type: 'string',
-                default: '',
-            },
-            {
-                displayName: 'MIME Type',
-                name: 'mimeType',
-                type: 'string',
-                default: '',
-            },
+            { displayName: 'Idempotency Key', name: 'idempotencyKey', type: 'string', default: '' },
+            { displayName: 'MIME Type', name: 'mimeType', type: 'string', default: '' },
         ],
     },
     {
@@ -628,24 +619,9 @@ const operationProperties = [
             show: { resource: ['message'], operation: ['previewSend'] },
         },
         options: [
-            {
-                displayName: 'Audio Duration (Ms)',
-                name: 'audioDurationMs',
-                type: 'number',
-                default: 0,
-            },
-            {
-                displayName: 'Caption',
-                name: 'caption',
-                type: 'string',
-                default: '',
-            },
-            {
-                displayName: 'MIME Type',
-                name: 'mimeType',
-                type: 'string',
-                default: '',
-            },
+            { displayName: 'Audio Duration (Ms)', name: 'audioDurationMs', type: 'number', default: 0 },
+            { displayName: 'Caption', name: 'caption', type: 'string', default: '' },
+            { displayName: 'MIME Type', name: 'mimeType', type: 'string', default: '' },
         ],
     },
     {
@@ -665,14 +641,9 @@ const operationProperties = [
         name: 'messageActionText',
         type: 'string',
         default: '',
-        typeOptions: {
-            rows: 3,
-        },
+        typeOptions: { rows: 3 },
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['reply', 'edit'],
-            },
+            show: { resource: ['message'], operation: ['reply', 'edit'] },
         },
     },
     {
@@ -682,10 +653,7 @@ const operationProperties = [
         default: '',
         placeholder: '34600111222 or 34600111222@s.whatsapp.net',
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['forward'],
-            },
+            show: { resource: ['message'], operation: ['forward'] },
         },
     },
     {
@@ -693,12 +661,9 @@ const operationProperties = [
         name: 'reactionEmoji',
         type: 'string',
         default: '',
-        description: 'Reaction emoji. Leave empty only if your backend supports clearing reactions.',
+        description: 'Reaction emoji. Leave empty to remove the reaction when supported by the backend.',
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['react'],
-            },
+            show: { resource: ['message'], operation: ['react'] },
         },
     },
     {
@@ -712,8 +677,14 @@ const operationProperties = [
         options: [
             { displayName: 'Client Ref', name: 'clientRef', type: 'string', default: '' },
             { displayName: 'From', name: 'from', type: 'dateTime', default: '' },
-            { displayName: 'Limit', name: 'limit', type: 'number',
-                description: 'Max number of results to return', default: 50, typeOptions: { minValue: 1, maxValue: 100 } },
+            {
+                displayName: 'Limit',
+                name: 'limit',
+                type: 'number',
+                default: 50,
+                description: 'Max number of results to return',
+                typeOptions: { minValue: 1, maxValue: 100 },
+            },
             { displayName: 'Status', name: 'status', type: 'string', default: '' },
             { displayName: 'To', name: 'to', type: 'dateTime', default: '' },
             { displayName: 'To JID', name: 'toJid', type: 'string', default: '' },
@@ -725,10 +696,7 @@ const operationProperties = [
         type: 'collection',
         default: {},
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['reply', 'forward', 'delete', 'edit', 'react'],
-            },
+            show: { resource: ['message'], operation: ['reply', 'forward', 'delete', 'edit', 'react'] },
         },
         options: [
             {
@@ -736,11 +704,7 @@ const operationProperties = [
                 name: 'force',
                 type: 'boolean',
                 default: false,
-                displayOptions: {
-                    show: {
-                        '/operation': ['forward'],
-                    },
-                },
+                displayOptions: { show: { '/operation': ['forward'] } },
             },
             {
                 displayName: 'Generate Automatically',
@@ -749,57 +713,27 @@ const operationProperties = [
                 default: true,
                 description: 'Whether to generate a unique X-Idempotency-Key per n8n item when no manual key is provided',
             },
-            {
-                displayName: 'Idempotency Key',
-                name: 'idempotencyKey',
-                type: 'string',
-                default: '',
-            },
+            { displayName: 'Idempotency Key', name: 'idempotencyKey', type: 'string', default: '' },
         ],
     },
     {
         displayName: 'Keys',
         name: 'messageReadKeys',
         type: 'fixedCollection',
-        typeOptions: {
-            multipleValues: true,
-        },
+        typeOptions: { multipleValues: true },
         default: {},
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['markRead'],
-            },
+            show: { resource: ['message'], operation: ['markRead'] },
         },
         options: [
             {
                 name: 'values',
                 displayName: 'Keys',
                 values: [
-                    {
-                        displayName: 'From Me',
-                        name: 'fromMe',
-                        type: 'boolean',
-                        default: false,
-                    },
-                    {
-                        displayName: 'ID',
-                        name: 'id',
-                        type: 'string',
-                        default: '',
-                    },
-                    {
-                        displayName: 'Participant',
-                        name: 'participant',
-                        type: 'string',
-                        default: '',
-                    },
-                    {
-                        displayName: 'Remote JID',
-                        name: 'remoteJid',
-                        type: 'string',
-                        default: '',
-                    },
+                    { displayName: 'From Me', name: 'fromMe', type: 'boolean', default: false },
+                    { displayName: 'Message ID', name: 'id', type: 'string', default: '' },
+                    { displayName: 'Participant', name: 'participant', type: 'string', default: '' },
+                    { displayName: 'Remote JID', name: 'remoteJid', type: 'string', default: '' },
                 ],
             },
         ],
@@ -810,38 +744,23 @@ const operationProperties = [
         type: 'string',
         default: '',
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['sendReceipts'],
-            },
+            show: { resource: ['message'], operation: ['sendReceipts'] },
         },
     },
     {
         displayName: 'Message IDs',
         name: 'messageReceiptIds',
         type: 'fixedCollection',
-        typeOptions: {
-            multipleValues: true,
-        },
+        typeOptions: { multipleValues: true },
         default: {},
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['sendReceipts'],
-            },
+            show: { resource: ['message'], operation: ['sendReceipts'] },
         },
         options: [
             {
                 name: 'values',
                 displayName: 'Message IDs',
-                values: [
-                    {
-                        displayName: 'Message ID',
-                        name: 'messageId',
-                        type: 'string',
-                        default: '',
-                    },
-                ],
+                values: [{ displayName: 'Message ID', name: 'messageId', type: 'string', default: '' }],
             },
         ],
     },
@@ -851,18 +770,10 @@ const operationProperties = [
         type: 'collection',
         default: {},
         displayOptions: {
-            show: {
-                resource: ['message'],
-                operation: ['sendReceipts'],
-            },
+            show: { resource: ['message'], operation: ['sendReceipts'] },
         },
         options: [
-            {
-                displayName: 'Participant',
-                name: 'participant',
-                type: 'string',
-                default: '',
-            },
+            { displayName: 'Participant', name: 'participant', type: 'string', default: '' },
             {
                 displayName: 'Type',
                 name: 'type',
@@ -885,9 +796,7 @@ const operationProperties = [
         displayName: 'Items',
         name: 'textBatchItems',
         type: 'fixedCollection',
-        typeOptions: {
-            multipleValues: true,
-        },
+        typeOptions: { multipleValues: true },
         default: {},
         displayOptions: {
             show: { resource: ['batch'], operation: ['sendTextBatch', 'previewBatch'] },
@@ -897,34 +806,18 @@ const operationProperties = [
                 name: 'values',
                 displayName: 'Items',
                 values: [
-                    {
-                        displayName: 'Client Ref',
-                        name: 'clientRef',
-                        type: 'string',
-                        default: '',
-                    },
+                    { displayName: 'Client Ref', name: 'clientRef', type: 'string', default: '' },
                     {
                         displayName: 'Content Mode',
                         name: 'contentMode',
                         type: 'options',
                         default: 'singleText',
                         options: [
-                            {
-                                name: 'Single Text',
-                                value: 'singleText',
-                            },
-                            {
-                                name: 'Text Sequence',
-                                value: 'textSequence',
-                            },
-                        ]
+                            { name: 'Single Text', value: 'singleText' },
+                            { name: 'Text Sequence', value: 'textSequence' },
+                        ],
                     },
-                    {
-                        displayName: 'Text',
-                        name: 'text',
-                        type: 'string',
-                        default: '',
-                    },
+                    { displayName: 'Text', name: 'text', type: 'string', default: '' },
                     {
                         displayName: 'Texts',
                         name: 'texts',
@@ -934,23 +827,11 @@ const operationProperties = [
                             {
                                 name: 'values',
                                 displayName: 'Texts',
-                                values: [
-                                    {
-                                        displayName: 'Text',
-                                        name: 'text',
-                                        type: 'string',
-                                        default: '',
-                                    },
-                                ]
+                                values: [{ displayName: 'Text', name: 'text', type: 'string', default: '' }],
                             },
-                        ]
+                        ],
                     },
-                    {
-                        displayName: 'To',
-                        name: 'to',
-                        type: 'string',
-                        default: '',
-                    },
+                    { displayName: 'To', name: 'to', type: 'string', default: '' },
                 ],
             },
         ],
@@ -959,9 +840,7 @@ const operationProperties = [
         displayName: 'Items',
         name: 'mediaBatchItems',
         type: 'fixedCollection',
-        typeOptions: {
-            multipleValues: true,
-        },
+        typeOptions: { multipleValues: true },
         default: {},
         displayOptions: {
             show: { resource: ['batch'], operation: ['sendMediaBatch'] },
@@ -971,48 +850,13 @@ const operationProperties = [
                 name: 'values',
                 displayName: 'Items',
                 values: [
-                    {
-                        displayName: 'Audio Duration (Ms)',
-                        name: 'audioDurationMs',
-                        type: 'number',
-                        default: 0
-                    },
-                    {
-                        displayName: 'Caption',
-                        name: 'caption',
-                        type: 'string',
-                        default: '',
-                    },
-                    {
-                        displayName: 'Client Ref',
-                        name: 'clientRef',
-                        type: 'string',
-                        default: '',
-                    },
-                    {
-                        displayName: 'File Name',
-                        name: 'fileName',
-                        type: 'string',
-                        default: '',
-                    },
-                    {
-                        displayName: 'Media URL',
-                        name: 'mediaUrl',
-                        type: 'string',
-                        default: '',
-                    },
-                    {
-                        displayName: 'MIME Type',
-                        name: 'mimeType',
-                        type: 'string',
-                        default: '',
-                    },
-                    {
-                        displayName: 'To',
-                        name: 'to',
-                        type: 'string',
-                        default: '',
-                    },
+                    { displayName: 'Audio Duration (Ms)', name: 'audioDurationMs', type: 'number', default: 0 },
+                    { displayName: 'Caption', name: 'caption', type: 'string', default: '' },
+                    { displayName: 'Client Ref', name: 'clientRef', type: 'string', default: '' },
+                    { displayName: 'File Name', name: 'fileName', type: 'string', default: '' },
+                    { displayName: 'Media URL', name: 'mediaUrl', type: 'string', default: '' },
+                    { displayName: 'MIME Type', name: 'mimeType', type: 'string', default: '' },
+                    { displayName: 'To', name: 'to', type: 'string', default: '' },
                 ],
             },
         ],
@@ -1023,12 +867,41 @@ const operationProperties = [
         type: 'options',
         default: 'text',
         options: [
-            { name: 'Media', value: 'media' },
             { name: 'Text', value: 'text' },
+            { name: 'Media', value: 'media' },
         ],
         displayOptions: {
             show: { resource: ['batch'], operation: ['previewBatch'] },
         },
+    },
+    {
+        displayName: 'Preview Media Items',
+        name: 'previewMediaBatchItems',
+        type: 'fixedCollection',
+        typeOptions: { multipleValues: true },
+        default: {},
+        displayOptions: {
+            show: {
+                resource: ['batch'],
+                operation: ['previewBatch'],
+                batchPreviewType: ['media'],
+            },
+        },
+        options: [
+            {
+                name: 'values',
+                displayName: 'Items',
+                values: [
+                    { displayName: 'Audio Duration (Ms)', name: 'audioDurationMs', type: 'number', default: 0 },
+                    { displayName: 'Caption', name: 'caption', type: 'string', default: '' },
+                    { displayName: 'Client Ref', name: 'clientRef', type: 'string', default: '' },
+                    { displayName: 'File Name', name: 'fileName', type: 'string', default: '' },
+                    { displayName: 'Media URL', name: 'mediaUrl', type: 'string', default: '' },
+                    { displayName: 'MIME Type', name: 'mimeType', type: 'string', default: '' },
+                    { displayName: 'To', name: 'to', type: 'string', default: '' },
+                ],
+            },
+        ],
     },
     {
         displayName: 'Additional Options',
@@ -1039,18 +912,8 @@ const operationProperties = [
             show: { resource: ['batch'], operation: ['sendTextBatch', 'sendMediaBatch'] },
         },
         options: [
-            {
-                displayName: 'Generate Automatically',
-                name: 'generateIdempotencyKey',
-                type: 'boolean',
-                default: true,
-            },
-            {
-                displayName: 'Idempotency Key',
-                name: 'idempotencyKey',
-                type: 'string',
-                default: '',
-            },
+            { displayName: 'Generate Automatically', name: 'generateIdempotencyKey', type: 'boolean', default: true },
+            { displayName: 'Idempotency Key', name: 'idempotencyKey', type: 'string', default: '' },
         ],
     },
     {
@@ -1068,7 +931,10 @@ const operationProperties = [
         type: 'string',
         default: '',
         displayOptions: {
-            show: { resource: ['consent'], operation: ['upsert', 'revoke', 'get'] },
+            show: {
+                resource: ['consent', 'recipient', 'privacy'],
+                operation: ['upsert', 'revoke', 'get', 'getLimits', 'updateBlockStatus'],
+            },
         },
     },
     {
@@ -1091,10 +957,7 @@ const operationProperties = [
         type: 'collection',
         default: {},
         displayOptions: {
-            show: {
-                resource: ['chat', 'contact', 'group'],
-                operation: ['getMany'],
-            },
+            show: { resource: ['chat', 'contact', 'group'], operation: ['getMany'] },
         },
         options: [
             {
@@ -1106,6 +969,211 @@ const operationProperties = [
                 typeOptions: { minValue: 1, maxValue: 100 },
             },
         ],
+    },
+    {
+        displayName: 'Chat JID',
+        name: 'chatJid',
+        type: 'string',
+        default: '',
+        displayOptions: {
+            show: { resource: ['chat'], operation: ['archive', 'mute', 'setReadState'] },
+        },
+    },
+    {
+        displayName: 'Archive',
+        name: 'chatArchive',
+        type: 'boolean',
+        default: true,
+        displayOptions: {
+            show: { resource: ['chat'], operation: ['archive'] },
+        },
+    },
+    {
+        displayName: 'Mute Mode',
+        name: 'chatMuteMode',
+        type: 'options',
+        default: 'muteUntil',
+        options: [
+            { name: 'Mute Until', value: 'muteUntil' },
+            { name: 'Unmute', value: 'unmute' },
+        ],
+        displayOptions: {
+            show: { resource: ['chat'], operation: ['mute'] },
+        },
+    },
+    {
+        displayName: 'Mute Until',
+        name: 'chatMuteUntil',
+        type: 'dateTime',
+        default: '',
+        description: 'When mute mode is selected, the backend mutes the chat until this time',
+        displayOptions: {
+            show: {
+                resource: ['chat'],
+                operation: ['mute'],
+                chatMuteMode: ['muteUntil'],
+            },
+        },
+    },
+    {
+        displayName: 'Read',
+        name: 'chatRead',
+        type: 'boolean',
+        default: true,
+        displayOptions: {
+            show: { resource: ['chat'], operation: ['setReadState'] },
+        },
+    },
+    {
+        displayName: 'Group JID',
+        name: 'groupJid',
+        type: 'string',
+        default: '',
+        displayOptions: {
+            show: {
+                resource: ['group'],
+                operation: [
+                    'get',
+                    'updateSubject',
+                    'updateDescription',
+                    'updateParticipants',
+                    'updateParticipantRequests',
+                    'getInviteCode',
+                    'revokeInviteCode',
+                    'updateSettings',
+                    'updateEphemeral',
+                ],
+            },
+        },
+    },
+    {
+        displayName: 'Subject',
+        name: 'groupSubject',
+        type: 'string',
+        default: '',
+        displayOptions: {
+            show: { resource: ['group'], operation: ['create', 'updateSubject'] },
+        },
+    },
+    {
+        displayName: 'Description',
+        name: 'groupDescription',
+        type: 'string',
+        default: '',
+        typeOptions: { rows: 4 },
+        displayOptions: {
+            show: { resource: ['group'], operation: ['updateDescription'] },
+        },
+    },
+    {
+        displayName: 'Participants',
+        name: 'groupParticipants',
+        type: 'fixedCollection',
+        typeOptions: { multipleValues: true },
+        default: {},
+        displayOptions: {
+            show: { resource: ['group'], operation: ['create', 'updateParticipants', 'updateParticipantRequests'] },
+        },
+        options: [
+            {
+                name: 'values',
+                displayName: 'Participants',
+                values: [{ displayName: 'JID', name: 'jid', type: 'string', default: '' }],
+            },
+        ],
+    },
+    {
+        displayName: 'Invite Code',
+        name: 'groupInviteCode',
+        type: 'string',
+        default: '',
+        displayOptions: {
+            show: { resource: ['group'], operation: ['join'] },
+        },
+    },
+    {
+        displayName: 'Action',
+        name: 'groupParticipantsAction',
+        type: 'options',
+        default: 'add',
+        options: [
+            { name: 'Add', value: 'add' },
+            { name: 'Remove', value: 'remove' },
+            { name: 'Promote', value: 'promote' },
+            { name: 'Demote', value: 'demote' },
+        ],
+        displayOptions: {
+            show: { resource: ['group'], operation: ['updateParticipants'] },
+        },
+    },
+    {
+        displayName: 'Action',
+        name: 'groupParticipantRequestsAction',
+        type: 'options',
+        default: 'approve',
+        options: [
+            { name: 'Approve', value: 'approve' },
+            { name: 'Reject', value: 'reject' },
+        ],
+        displayOptions: {
+            show: { resource: ['group'], operation: ['updateParticipantRequests'] },
+        },
+    },
+    {
+        displayName: 'Additional Options',
+        name: 'groupSettingsOptions',
+        type: 'collection',
+        default: {},
+        displayOptions: {
+            show: { resource: ['group'], operation: ['updateSettings'] },
+        },
+        options: [
+            {
+                displayName: 'Setting',
+                name: 'setting',
+                type: 'options',
+                default: '',
+                options: [
+                    { name: 'Announcement', value: 'announcement' },
+                    { name: 'Default', value: '' },
+                    { name: 'Locked', value: 'locked' },
+                    { name: 'Not Announcement', value: 'not_announcement' },
+                    { name: 'Unlocked', value: 'unlocked' },
+                ],
+            },
+            {
+                displayName: 'Join Approval Mode',
+                name: 'joinApprovalMode',
+                type: 'options',
+                default: '',
+                options: [
+                    { name: 'Default', value: '' },
+                    { name: 'Off', value: 'off' },
+                    { name: 'On', value: 'on' },
+                ],
+            },
+            {
+                displayName: 'Member Add Mode',
+                name: 'memberAddMode',
+                type: 'options',
+                default: '',
+                options: [
+                    { name: 'Default', value: '' },
+                    { name: 'Admin Only', value: 'admin_only' },
+                    { name: 'All Members', value: 'all_member_add' },
+                ],
+            },
+        ],
+    },
+    {
+        displayName: 'Ephemeral Expiration',
+        name: 'groupEphemeralExpiration',
+        type: 'number',
+        default: 0,
+        description: 'Duration in seconds. Use 0 to disable ephemeral mode for the group.',
+        displayOptions: {
+            show: { resource: ['group'], operation: ['updateEphemeral'] },
+        },
     },
     {
         displayName: 'Chat JID',
@@ -1121,10 +1189,7 @@ const operationProperties = [
         name: 'historySyncCount',
         type: 'number',
         default: 50,
-        typeOptions: {
-            minValue: 1,
-            maxValue: 200,
-        },
+        typeOptions: { minValue: 1, maxValue: 200 },
         displayOptions: {
             show: { resource: ['historySync'], operation: ['fetch'] },
         },
@@ -1147,12 +1212,7 @@ const operationProperties = [
             show: { resource: ['historySync'], operation: ['fetch'] },
         },
         options: [
-            {
-                displayName: 'From Me',
-                name: 'fromMe',
-                type: 'boolean',
-                default: false,
-            },
+            { displayName: 'From Me', name: 'fromMe', type: 'boolean', default: false },
             {
                 displayName: 'Oldest Message Timestamp',
                 name: 'oldestMessageTimestamp',
@@ -1160,22 +1220,8 @@ const operationProperties = [
                 default: 0,
                 description: 'Unix timestamp in seconds when the oldest message is not present locally',
             },
-            {
-                displayName: 'Participant',
-                name: 'participant',
-                type: 'string',
-                default: '',
-            },
+            { displayName: 'Participant', name: 'participant', type: 'string', default: '' },
         ],
-    },
-    {
-        displayName: 'JID',
-        name: 'limitsJid',
-        type: 'string',
-        default: '',
-        displayOptions: {
-            show: { resource: ['recipient'], operation: ['getLimits'] },
-        },
     },
     {
         displayName: 'Delivery ID',
@@ -1196,8 +1242,14 @@ const operationProperties = [
         },
         options: [
             { displayName: 'Event ID', name: 'eventId', type: 'string', default: '' },
-            { displayName: 'Limit', name: 'limit', type: 'number',
-                description: 'Max number of results to return', default: 50, typeOptions: { minValue: 1, maxValue: 100 } },
+            {
+                displayName: 'Limit',
+                name: 'limit',
+                type: 'number',
+                default: 50,
+                description: 'Max number of results to return',
+                typeOptions: { minValue: 1, maxValue: 100 },
+            },
             { displayName: 'Since', name: 'since', type: 'dateTime', default: '' },
             { displayName: 'Status', name: 'status', type: 'string', default: '' },
         ],
@@ -1232,6 +1284,114 @@ const operationProperties = [
             },
             { displayName: 'Message ID', name: 'messageId', type: 'string', default: '' },
         ],
+    },
+    {
+        displayName: 'Action',
+        name: 'privacyBlockAction',
+        type: 'options',
+        default: 'block',
+        options: [
+            { name: 'Block', value: 'block' },
+            { name: 'Unblock', value: 'unblock' },
+        ],
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateBlockStatus'] },
+        },
+    },
+    {
+        displayName: 'Value',
+        name: 'privacyLastSeenValue',
+        type: 'options',
+        default: 'contacts',
+        options: [
+            { name: 'All', value: 'all' },
+            { name: 'Contacts', value: 'contacts' },
+            { name: 'Contact Blacklist', value: 'contact_blacklist' },
+            { name: 'None', value: 'none' },
+        ],
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateLastSeen'] },
+        },
+    },
+    {
+        displayName: 'Value',
+        name: 'privacyOnlineValue',
+        type: 'options',
+        default: 'match_last_seen',
+        options: [
+            { name: 'All', value: 'all' },
+            { name: 'Match Last Seen', value: 'match_last_seen' },
+        ],
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateOnline'] },
+        },
+    },
+    {
+        displayName: 'Value',
+        name: 'privacyProfilePhotoValue',
+        type: 'options',
+        default: 'contacts',
+        options: [
+            { name: 'All', value: 'all' },
+            { name: 'Contacts', value: 'contacts' },
+            { name: 'Contact Blacklist', value: 'contact_blacklist' },
+            { name: 'None', value: 'none' },
+        ],
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateProfilePhoto'] },
+        },
+    },
+    {
+        displayName: 'Value',
+        name: 'privacyStatusValue',
+        type: 'options',
+        default: 'contacts',
+        options: [
+            { name: 'All', value: 'all' },
+            { name: 'Contacts', value: 'contacts' },
+            { name: 'Contact Blacklist', value: 'contact_blacklist' },
+            { name: 'None', value: 'none' },
+        ],
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateStatus'] },
+        },
+    },
+    {
+        displayName: 'Value',
+        name: 'privacyGroupsAddValue',
+        type: 'options',
+        default: 'contacts',
+        options: [
+            { name: 'All', value: 'all' },
+            { name: 'Contacts', value: 'contacts' },
+            { name: 'Contact Blacklist', value: 'contact_blacklist' },
+        ],
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateGroupsAdd'] },
+        },
+    },
+    {
+        displayName: 'Value',
+        name: 'privacyReadReceiptsValue',
+        type: 'options',
+        default: 'all',
+        options: [
+            { name: 'All', value: 'all' },
+            { name: 'None', value: 'none' },
+        ],
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateReadReceipts'] },
+        },
+    },
+    {
+        displayName: 'Duration',
+        name: 'privacyDefaultDisappearingDuration',
+        type: 'number',
+        default: 0,
+        description: 'Duration in seconds. Use 0 to disable the default disappearing mode.',
+        displayOptions: {
+            show: { resource: ['privacy'], operation: ['updateDefaultDisappearingMode'] },
+        },
     },
     {
         displayName: 'Method',
@@ -1307,9 +1467,7 @@ const operationProperties = [
         name: 'customBody',
         type: 'string',
         default: '',
-        typeOptions: {
-            rows: 6,
-        },
+        typeOptions: { rows: 6 },
         description: 'JSON object string sent as the request body',
         displayOptions: {
             show: {
@@ -1373,15 +1531,16 @@ class BaileysInstance {
             properties: [
                 resourceProperty,
                 instanceOperations,
-                messageOperations,
-                batchOperations,
+                historySyncOperations,
+                eventOperations,
                 chatOperations,
                 contactOperations,
-                consentOperations,
-                eventOperations,
                 groupOperations,
-                historySyncOperations,
+                messageOperations,
+                batchOperations,
+                consentOperations,
                 recipientOperations,
+                privacyOperations,
                 webhookDeliveryOperations,
                 customApiRequestOperations,
                 ...operationProperties,
@@ -1395,48 +1554,7 @@ class BaileysInstance {
             try {
                 const resource = this.getNodeParameter('resource', itemIndex);
                 const operation = this.getNodeParameter('operation', itemIndex);
-                let responseData;
-                if (resource === 'instance') {
-                    responseData = await executeInstanceOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'message') {
-                    responseData = await executeMessageOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'batch') {
-                    responseData = await executeBatchOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'chat') {
-                    responseData = await executeSnapshotOperation.call(this, itemIndex, operation, 'chat');
-                }
-                else if (resource === 'contact') {
-                    responseData = await executeSnapshotOperation.call(this, itemIndex, operation, 'contact');
-                }
-                else if (resource === 'consent') {
-                    responseData = await executeConsentOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'event') {
-                    responseData = await executeEventOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'group') {
-                    responseData = await executeSnapshotOperation.call(this, itemIndex, operation, 'group');
-                }
-                else if (resource === 'historySync') {
-                    responseData = await executeHistorySyncOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'recipient') {
-                    responseData = await executeRecipientOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'webhookDelivery') {
-                    responseData = await executeWebhookDeliveryOperation.call(this, itemIndex, operation);
-                }
-                else if (resource === 'customApiRequest') {
-                    responseData = await executeCustomApiRequest.call(this, itemIndex);
-                }
-                else {
-                    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported resource "${resource}"`, {
-                        itemIndex,
-                    });
-                }
+                const responseData = await executeResourceOperation.call(this, itemIndex, resource, operation);
                 results.push({
                     json: toNodeJson(responseData),
                     pairedItem: itemIndex,
@@ -1445,9 +1563,7 @@ class BaileysInstance {
             catch (error) {
                 if (this.continueOnFail()) {
                     results.push({
-                        json: {
-                            error: toErrorJson(error),
-                        },
+                        json: { error: toErrorJson(error) },
                         pairedItem: itemIndex,
                     });
                     continue;
@@ -1459,345 +1575,527 @@ class BaileysInstance {
     }
 }
 exports.BaileysInstance = BaileysInstance;
+function createOperationProperty(resource, defaultValue, options) {
+    return {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        default: defaultValue,
+        displayOptions: { show: { resource: [resource] } },
+        options,
+    };
+}
+async function executeResourceOperation(itemIndex, resource, operation) {
+    switch (resource) {
+        case 'instance':
+            return await executeInstanceOperation.call(this, itemIndex, operation);
+        case 'historySync':
+            return await executeHistorySyncOperation.call(this, itemIndex, operation);
+        case 'event':
+            return await executeEventOperation.call(this, itemIndex, operation);
+        case 'chat':
+            return await executeChatOperation.call(this, itemIndex, operation);
+        case 'contact':
+            return await executeContactOperation.call(this, itemIndex, operation);
+        case 'group':
+            return await executeGroupOperation.call(this, itemIndex, operation);
+        case 'message':
+            return await executeMessageOperation.call(this, itemIndex, operation);
+        case 'batch':
+            return await executeBatchOperation.call(this, itemIndex, operation);
+        case 'consent':
+            return await executeConsentOperation.call(this, itemIndex, operation);
+        case 'recipient':
+            return await executeRecipientOperation.call(this, itemIndex, operation);
+        case 'privacy':
+            return await executePrivacyOperation.call(this, itemIndex, operation);
+        case 'webhookDelivery':
+            return await executeWebhookDeliveryOperation.call(this, itemIndex, operation);
+        case 'customApiRequest':
+            return await executeCustomApiRequest.call(this, itemIndex);
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported resource "${resource}"`, { itemIndex });
+    }
+}
 async function executeInstanceOperation(itemIndex, operation) {
-    if (operation === 'getHealth') {
-        return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/health' });
+    switch (operation) {
+        case 'getHealth':
+            return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/health' });
+        case 'getDependenciesHealth':
+            return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/health/deps' });
+        case 'getStatus':
+            return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/status' });
+        case 'getQueueStatus':
+            return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/queues/status' });
+        case 'getPairingQr':
+            return await baileysRequest.call(this, itemIndex, { method: 'POST', path: '/pairing/qr' });
+        case 'requestPairingCode': {
+            const phoneNumber = this.getNodeParameter('phoneNumber', itemIndex, '');
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/pairing/code',
+                body: phoneNumber ? { phone_number: phoneNumber } : undefined,
+            });
+        }
+        case 'logoutSession':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/session/logout',
+                body: {
+                    purge_auth: this.getNodeParameter('purgeAuth', itemIndex),
+                    reconnect: this.getNodeParameter('reconnect', itemIndex),
+                },
+            });
+        case 'sendWebhookTest': {
+            const text = this.getNodeParameter('webhookTestText', itemIndex, '');
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/webhook/test',
+                body: text ? { text } : undefined,
+            });
+        }
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported instance operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'getDependenciesHealth') {
-        return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/health/deps' });
+}
+async function executeHistorySyncOperation(itemIndex, operation) {
+    switch (operation) {
+        case 'getStatus':
+            return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/history-sync/status' });
+        case 'fetch': {
+            const additionalOptions = this.getNodeParameter('historySyncAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/history-sync/fetch',
+                body: cleanObject({
+                    count: this.getNodeParameter('historySyncCount', itemIndex),
+                    chat_jid: this.getNodeParameter('historySyncChatJid', itemIndex),
+                    oldest_message_id: this.getNodeParameter('historySyncOldestMessageId', itemIndex),
+                    oldest_message_timestamp: getOptionalPositiveNumber(additionalOptions.oldestMessageTimestamp),
+                    participant: getOptionalString(additionalOptions.participant),
+                    from_me: additionalOptions.fromMe === true ? true : undefined,
+                }),
+            });
+        }
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported history sync operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'getStatus') {
-        return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/status' });
+}
+async function executeEventOperation(itemIndex, operation) {
+    switch (operation) {
+        case 'get': {
+            const eventId = this.getNodeParameter('eventId', itemIndex);
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/events/${encodeURIComponent(eventId)}`,
+            });
+        }
+        case 'getMany': {
+            const filters = this.getNodeParameter('eventFilters', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: '/events',
+                qs: cleanObject({
+                    event_type: getOptionalString(filters.eventType),
+                    entity_type: getOptionalString(filters.entityType),
+                    message_id: getOptionalString(filters.messageId),
+                    limit: filters.limit,
+                }),
+            });
+        }
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported event operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'getQueueStatus') {
-        return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/queues/status' });
+}
+async function executeChatOperation(itemIndex, operation) {
+    switch (operation) {
+        case 'getMany':
+            return await executeSnapshotList.call(this, itemIndex, '/chats');
+        case 'archive':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/chats/${encodeURIComponent(this.getNodeParameter('chatJid', itemIndex))}/archive`,
+                body: {
+                    archive: this.getNodeParameter('chatArchive', itemIndex),
+                },
+            });
+        case 'mute': {
+            const jid = this.getNodeParameter('chatJid', itemIndex);
+            const muteMode = this.getNodeParameter('chatMuteMode', itemIndex);
+            const body = muteMode === 'unmute'
+                ? { muted: false }
+                : cleanObject({
+                    muted: true,
+                    mute_until: this.getNodeParameter('chatMuteUntil', itemIndex, ''),
+                });
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/chats/${encodeURIComponent(jid)}/mute`,
+                body,
+            });
+        }
+        case 'setReadState':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/chats/${encodeURIComponent(this.getNodeParameter('chatJid', itemIndex))}/read-state`,
+                body: {
+                    read: this.getNodeParameter('chatRead', itemIndex),
+                },
+            });
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported chat operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'getPairingQr') {
-        return await baileysRequest.call(this, itemIndex, { method: 'POST', path: '/pairing/qr' });
-    }
-    if (operation === 'requestPairingCode') {
-        const phoneNumber = this.getNodeParameter('phoneNumber', itemIndex, '');
-        const body = phoneNumber ? { phone_number: phoneNumber } : undefined;
-        return await baileysRequest.call(this, itemIndex, { method: 'POST', path: '/pairing/code', body });
-    }
-    if (operation === 'logoutSession') {
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/session/logout',
-            body: {
-                purge_auth: this.getNodeParameter('purgeAuth', itemIndex),
-                reconnect: this.getNodeParameter('reconnect', itemIndex),
-            },
+}
+async function executeContactOperation(itemIndex, operation) {
+    if (operation !== 'getMany') {
+        throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported contact operation "${operation}"`, {
+            itemIndex,
         });
     }
-    if (operation === 'sendWebhookTest') {
-        const text = this.getNodeParameter('webhookTestText', itemIndex, '');
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/webhook/test',
-            body: text ? { text } : undefined,
-        });
+    return await executeSnapshotList.call(this, itemIndex, '/contacts');
+}
+async function executeGroupOperation(itemIndex, operation) {
+    switch (operation) {
+        case 'getMany':
+            return await executeSnapshotList.call(this, itemIndex, '/groups');
+        case 'get':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}`,
+            });
+        case 'create':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/groups',
+                body: {
+                    subject: this.getNodeParameter('groupSubject', itemIndex),
+                    participants: getJidCollection.call(this, itemIndex, 'groupParticipants'),
+                },
+            });
+        case 'join':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/groups/join',
+                body: {
+                    invite_code: this.getNodeParameter('groupInviteCode', itemIndex),
+                },
+            });
+        case 'updateSubject':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'PATCH',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/subject`,
+                body: {
+                    subject: this.getNodeParameter('groupSubject', itemIndex),
+                },
+            });
+        case 'updateDescription':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'PATCH',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/description`,
+                body: {
+                    description: this.getNodeParameter('groupDescription', itemIndex),
+                },
+            });
+        case 'updateParticipants':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/participants`,
+                body: {
+                    participants: getJidCollection.call(this, itemIndex, 'groupParticipants'),
+                    action: this.getNodeParameter('groupParticipantsAction', itemIndex),
+                },
+            });
+        case 'updateParticipantRequests':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/participants/requests`,
+                body: {
+                    participants: getJidCollection.call(this, itemIndex, 'groupParticipants'),
+                    action: this.getNodeParameter('groupParticipantRequestsAction', itemIndex),
+                },
+            });
+        case 'getInviteCode':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/invite-code`,
+            });
+        case 'revokeInviteCode':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/invite-code/revoke`,
+            });
+        case 'updateSettings': {
+            const options = this.getNodeParameter('groupSettingsOptions', itemIndex, {});
+            const body = cleanObject({
+                setting: getOptionalString(options.setting),
+                member_add_mode: getOptionalString(options.memberAddMode),
+                join_approval_mode: getOptionalString(options.joinApprovalMode),
+            });
+            ensureNonEmptyBody.call(this, itemIndex, body, 'Group settings');
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'PATCH',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/settings`,
+                body,
+            });
+        }
+        case 'updateEphemeral':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'PATCH',
+                path: `/groups/${encodeURIComponent(this.getNodeParameter('groupJid', itemIndex))}/ephemeral`,
+                body: {
+                    ephemeral_expiration: this.getNodeParameter('groupEphemeralExpiration', itemIndex),
+                },
+            });
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported group operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported instance operation "${operation}"`, {
-        itemIndex,
-    });
 }
 async function executeMessageOperation(itemIndex, operation) {
-    if (operation === 'sendText') {
-        const body = buildTextPayload.call(this, itemIndex, 'send');
-        const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/send/text',
-            body,
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'send-text', additionalOptions),
-        });
-    }
-    if (operation === 'sendMedia') {
-        const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {});
-        const body = cleanObject({
-            to: this.getNodeParameter('to', itemIndex),
-            media_url: this.getNodeParameter('mediaUrl', itemIndex),
-            mime_type: getOptionalString(additionalOptions.mimeType),
-            caption: getOptionalString(additionalOptions.caption),
-            file_name: getOptionalString(additionalOptions.fileName),
-            audio_duration_ms: getOptionalNumber(additionalOptions.audioDurationMs),
-            client_ref: getOptionalString(additionalOptions.clientRef),
-        });
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/send/media',
-            body,
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'send-media', additionalOptions),
-        });
-    }
-    if (operation === 'previewSend') {
-        const previewType = this.getNodeParameter('previewType', itemIndex);
-        const additionalOptions = this.getNodeParameter('messagePreviewAdditionalOptions', itemIndex, {});
-        if (previewType === 'text') {
-            const body = buildTextPayload.call(this, itemIndex, 'preview');
+    switch (operation) {
+        case 'sendText': {
+            const body = buildTextPayload.call(this, itemIndex, 'send');
+            const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/send/text',
+                body,
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'send-text', additionalOptions),
+            });
+        }
+        case 'sendMedia': {
+            const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/send/media',
+                body: cleanObject({
+                    to: this.getNodeParameter('to', itemIndex),
+                    media_url: this.getNodeParameter('mediaUrl', itemIndex),
+                    mime_type: getOptionalString(additionalOptions.mimeType),
+                    caption: getOptionalString(additionalOptions.caption),
+                    file_name: getOptionalString(additionalOptions.fileName),
+                    audio_duration_ms: getOptionalNumber(additionalOptions.audioDurationMs),
+                    client_ref: getOptionalString(additionalOptions.clientRef),
+                }),
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'send-media', additionalOptions),
+            });
+        }
+        case 'previewSend': {
+            const previewType = this.getNodeParameter('previewType', itemIndex);
+            if (previewType === 'text') {
+                return await baileysRequest.call(this, itemIndex, {
+                    method: 'POST',
+                    path: '/sends/preview',
+                    body: {
+                        type: 'text',
+                        ...buildTextPayload.call(this, itemIndex, 'preview'),
+                    },
+                });
+            }
+            const additionalOptions = this.getNodeParameter('messagePreviewAdditionalOptions', itemIndex, {});
             return await baileysRequest.call(this, itemIndex, {
                 method: 'POST',
                 path: '/sends/preview',
-                body: { type: 'text', ...body },
+                body: cleanObject({
+                    type: 'media',
+                    to: this.getNodeParameter('to', itemIndex),
+                    media_url: this.getNodeParameter('previewMediaUrl', itemIndex),
+                    mime_type: getOptionalString(additionalOptions.mimeType),
+                    caption: getOptionalString(additionalOptions.caption),
+                    audio_duration_ms: getOptionalNumber(additionalOptions.audioDurationMs),
+                }),
             });
         }
-        const body = cleanObject({
-            type: 'media',
-            to: this.getNodeParameter('to', itemIndex),
-            media_url: this.getNodeParameter('previewMediaUrl', itemIndex),
-            mime_type: getOptionalString(additionalOptions.mimeType),
-            caption: getOptionalString(additionalOptions.caption),
-            audio_duration_ms: getOptionalNumber(additionalOptions.audioDurationMs),
-        });
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/sends/preview',
-            body,
-        });
+        case 'get':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/sends/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}`,
+            });
+        case 'getMany': {
+            const filters = this.getNodeParameter('messageFilters', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: '/sends',
+                qs: cleanObject({
+                    status: getOptionalString(filters.status),
+                    to_jid: getOptionalString(filters.toJid),
+                    client_ref: getOptionalString(filters.clientRef),
+                    from: getOptionalString(filters.from),
+                    to: getOptionalString(filters.to),
+                    limit: filters.limit,
+                }),
+            });
+        }
+        case 'getInboundMessage':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}`,
+            });
+        case 'reply': {
+            const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/reply`,
+                body: { text: this.getNodeParameter('messageActionText', itemIndex) },
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-reply', additionalOptions),
+            });
+        }
+        case 'forward': {
+            const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/forward`,
+                body: cleanObject({
+                    to: this.getNodeParameter('forwardTo', itemIndex),
+                    force: additionalOptions.force === true ? true : undefined,
+                }),
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-forward', additionalOptions),
+            });
+        }
+        case 'delete': {
+            const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/delete`,
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-delete', additionalOptions),
+            });
+        }
+        case 'edit': {
+            const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/edit`,
+                body: { text: this.getNodeParameter('messageActionText', itemIndex) },
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-edit', additionalOptions),
+            });
+        }
+        case 'react': {
+            const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/reaction`,
+                body: cleanObject({
+                    emoji: getOptionalString(this.getNodeParameter('reactionEmoji', itemIndex)),
+                }),
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-react', additionalOptions),
+            });
+        }
+        case 'markRead':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/messages/read',
+                body: { keys: getMessageReadKeys.call(this, itemIndex) },
+            });
+        case 'sendReceipts': {
+            const additionalOptions = this.getNodeParameter('messageReceiptsAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/messages/receipts',
+                body: cleanObject({
+                    jid: this.getNodeParameter('messageReceiptsJid', itemIndex),
+                    participant: getOptionalString(additionalOptions.participant),
+                    message_ids: getMessageReceiptIds.call(this, itemIndex),
+                    type: getOptionalString(additionalOptions.type),
+                }),
+            });
+        }
+        case 'refreshMedia':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/media/refresh`,
+            });
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported message operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'get') {
-        const messageId = this.getNodeParameter('messageId', itemIndex);
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: `/sends/${encodeURIComponent(messageId)}`,
-        });
-    }
-    if (operation === 'getInboundMessage') {
-        const messageId = this.getNodeParameter('messageId', itemIndex);
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: `/messages/${encodeURIComponent(messageId)}`,
-        });
-    }
-    if (operation === 'getMany') {
-        const filters = this.getNodeParameter('messageFilters', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: '/sends',
-            qs: cleanObject({
-                status: getOptionalString(filters.status),
-                to_jid: getOptionalString(filters.toJid),
-                client_ref: getOptionalString(filters.clientRef),
-                from: getOptionalString(filters.from),
-                to: getOptionalString(filters.to),
-                limit: filters.limit,
-            }),
-        });
-    }
-    if (operation === 'reply') {
-        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/reply`,
-            body: {
-                text: this.getNodeParameter('messageActionText', itemIndex),
-            },
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-reply', additionalOptions),
-        });
-    }
-    if (operation === 'forward') {
-        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/forward`,
-            body: cleanObject({
-                to: this.getNodeParameter('forwardTo', itemIndex),
-                force: additionalOptions.force === true ? true : undefined,
-            }),
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-forward', additionalOptions),
-        });
-    }
-    if (operation === 'delete') {
-        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/delete`,
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-delete', additionalOptions),
-        });
-    }
-    if (operation === 'edit') {
-        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/edit`,
-            body: {
-                text: this.getNodeParameter('messageActionText', itemIndex),
-            },
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-edit', additionalOptions),
-        });
-    }
-    if (operation === 'react') {
-        const additionalOptions = this.getNodeParameter('messageActionAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/reaction`,
-            body: cleanObject({
-                emoji: getOptionalString(this.getNodeParameter('reactionEmoji', itemIndex)),
-            }),
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'message-react', additionalOptions),
-        });
-    }
-    if (operation === 'markRead') {
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/messages/read',
-            body: {
-                keys: getMessageReadKeys.call(this, itemIndex),
-            },
-        });
-    }
-    if (operation === 'sendReceipts') {
-        const additionalOptions = this.getNodeParameter('messageReceiptsAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/messages/receipts',
-            body: cleanObject({
-                jid: this.getNodeParameter('messageReceiptsJid', itemIndex),
-                participant: getOptionalString(additionalOptions.participant),
-                message_ids: getMessageReceiptIds.call(this, itemIndex),
-                type: getOptionalString(additionalOptions.type),
-            }),
-        });
-    }
-    if (operation === 'refreshMedia') {
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: `/messages/${encodeURIComponent(this.getNodeParameter('messageId', itemIndex))}/media/refresh`,
-        });
-    }
-    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported message operation "${operation}"`, {
-        itemIndex,
-    });
 }
 async function executeBatchOperation(itemIndex, operation) {
-    if (operation === 'sendTextBatch') {
-        const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/send/batch/text',
-            body: {
-                items: getTextBatchItems.call(this, itemIndex),
-            },
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'batch-text', additionalOptions),
-        });
+    switch (operation) {
+        case 'sendTextBatch': {
+            const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/send/batch/text',
+                body: { items: getTextBatchItems.call(this, itemIndex) },
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'batch-text', additionalOptions),
+            });
+        }
+        case 'sendMediaBatch': {
+            const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/send/batch/media',
+                body: { items: getMediaBatchItems.call(this, itemIndex, 'mediaBatchItems') },
+                idempotencyKey: resolveIdempotencyKey(itemIndex, 'batch-media', additionalOptions),
+            });
+        }
+        case 'previewBatch': {
+            const batchType = this.getNodeParameter('batchPreviewType', itemIndex);
+            const items = batchType === 'text'
+                ? getTextBatchItems.call(this, itemIndex)
+                : getMediaBatchItems.call(this, itemIndex, 'previewMediaBatchItems');
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/send-batches/preview',
+                body: { type: batchType, items },
+            });
+        }
+        case 'get':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/send-batches/${encodeURIComponent(this.getNodeParameter('batchId', itemIndex))}`,
+            });
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported batch operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'sendMediaBatch') {
-        const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/send/batch/media',
-            body: {
-                items: getMediaBatchItems.call(this, itemIndex),
-            },
-            idempotencyKey: resolveIdempotencyKey(itemIndex, 'batch-media', additionalOptions),
-        });
-    }
-    if (operation === 'previewBatch') {
-        const batchType = this.getNodeParameter('batchPreviewType', itemIndex);
-        const items = batchType === 'text'
-            ? getTextBatchItems.call(this, itemIndex)
-            : getMediaBatchItems.call(this, itemIndex, true);
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/send-batches/preview',
-            body: {
-                type: batchType,
-                items,
-            },
-        });
-    }
-    if (operation === 'get') {
-        const batchId = this.getNodeParameter('batchId', itemIndex);
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: `/send-batches/${encodeURIComponent(batchId)}`,
-        });
-    }
-    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported batch operation "${operation}"`, {
-        itemIndex,
-    });
 }
 async function executeConsentOperation(itemIndex, operation) {
     const jid = this.getNodeParameter('jid', itemIndex);
     const additionalOptions = this.getNodeParameter('consentAdditionalOptions', itemIndex, {});
-    if (operation === 'upsert') {
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/consents/upsert',
-            body: cleanObject({
-                jid,
-                timezone: getOptionalString(additionalOptions.timezone),
-                source: getOptionalString(additionalOptions.source),
-                reason: getOptionalString(additionalOptions.reason),
-            }),
-        });
+    switch (operation) {
+        case 'upsert':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/consents/upsert',
+                body: cleanObject({
+                    jid,
+                    timezone: getOptionalString(additionalOptions.timezone),
+                    source: getOptionalString(additionalOptions.source),
+                    reason: getOptionalString(additionalOptions.reason),
+                }),
+            });
+        case 'revoke':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/consents/revoke',
+                body: cleanObject({
+                    jid,
+                    reason: getOptionalString(additionalOptions.reason),
+                }),
+            });
+        case 'get':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/consents/${encodeURIComponent(jid)}`,
+            });
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported consent operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'revoke') {
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/consents/revoke',
-            body: cleanObject({
-                jid,
-                reason: getOptionalString(additionalOptions.reason),
-            }),
-        });
-    }
-    if (operation === 'get') {
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: `/consents/${encodeURIComponent(jid)}`,
-        });
-    }
-    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported consent operation "${operation}"`, {
-        itemIndex,
-    });
-}
-async function executeSnapshotOperation(itemIndex, operation, resource) {
-    if (operation !== 'getMany') {
-        throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported ${resource} operation "${operation}"`, {
-            itemIndex,
-        });
-    }
-    const filters = this.getNodeParameter('snapshotFilters', itemIndex, {});
-    const pathMap = {
-        chat: '/chats',
-        contact: '/contacts',
-        group: '/groups',
-    };
-    return await baileysRequest.call(this, itemIndex, {
-        method: 'GET',
-        path: pathMap[resource],
-        qs: cleanObject({
-            limit: filters.limit,
-        }),
-    });
-}
-async function executeHistorySyncOperation(itemIndex, operation) {
-    if (operation === 'getStatus') {
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: '/history-sync/status',
-        });
-    }
-    if (operation === 'fetch') {
-        const additionalOptions = this.getNodeParameter('historySyncAdditionalOptions', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: '/history-sync/fetch',
-            body: cleanObject({
-                count: this.getNodeParameter('historySyncCount', itemIndex),
-                chat_jid: this.getNodeParameter('historySyncChatJid', itemIndex),
-                oldest_message_id: this.getNodeParameter('historySyncOldestMessageId', itemIndex),
-                oldest_message_timestamp: getOptionalPositiveNumber(additionalOptions.oldestMessageTimestamp),
-                participant: getOptionalString(additionalOptions.participant),
-                from_me: additionalOptions.fromMe === true ? true : undefined,
-            }),
-        });
-    }
-    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported history sync operation "${operation}"`, {
-        itemIndex,
-    });
 }
 async function executeRecipientOperation(itemIndex, operation) {
     if (operation !== 'getLimits') {
@@ -1805,61 +2103,77 @@ async function executeRecipientOperation(itemIndex, operation) {
             itemIndex,
         });
     }
-    const jid = this.getNodeParameter('limitsJid', itemIndex);
     return await baileysRequest.call(this, itemIndex, {
         method: 'GET',
-        path: `/limits/${encodeURIComponent(jid)}`,
+        path: `/limits/${encodeURIComponent(this.getNodeParameter('jid', itemIndex))}`,
     });
 }
-async function executeEventOperation(itemIndex, operation) {
-    if (operation === 'get') {
-        const eventId = this.getNodeParameter('eventId', itemIndex);
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: `/events/${encodeURIComponent(eventId)}`,
-        });
+async function executePrivacyOperation(itemIndex, operation) {
+    switch (operation) {
+        case 'getSettings':
+            return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/privacy' });
+        case 'getBlocklist':
+            return await baileysRequest.call(this, itemIndex, { method: 'GET', path: '/privacy/blocklist' });
+        case 'updateBlockStatus':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: '/privacy/blocks',
+                body: {
+                    jid: this.getNodeParameter('jid', itemIndex),
+                    action: this.getNodeParameter('privacyBlockAction', itemIndex),
+                },
+            });
+        case 'updateLastSeen':
+            return await executePrivacyValuePatch.call(this, itemIndex, '/privacy/last-seen', 'privacyLastSeenValue');
+        case 'updateOnline':
+            return await executePrivacyValuePatch.call(this, itemIndex, '/privacy/online', 'privacyOnlineValue');
+        case 'updateProfilePhoto':
+            return await executePrivacyValuePatch.call(this, itemIndex, '/privacy/profile-photo', 'privacyProfilePhotoValue');
+        case 'updateStatus':
+            return await executePrivacyValuePatch.call(this, itemIndex, '/privacy/status', 'privacyStatusValue');
+        case 'updateGroupsAdd':
+            return await executePrivacyValuePatch.call(this, itemIndex, '/privacy/groups-add', 'privacyGroupsAddValue');
+        case 'updateReadReceipts':
+            return await executePrivacyValuePatch.call(this, itemIndex, '/privacy/read-receipts', 'privacyReadReceiptsValue');
+        case 'updateDefaultDisappearingMode':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'PATCH',
+                path: '/settings/disappearing-mode',
+                body: {
+                    duration: this.getNodeParameter('privacyDefaultDisappearingDuration', itemIndex),
+                },
+            });
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported privacy operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'getMany') {
-        const filters = this.getNodeParameter('eventFilters', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: '/events',
-            qs: cleanObject({
-                event_type: getOptionalString(filters.eventType),
-                entity_type: getOptionalString(filters.entityType),
-                message_id: getOptionalString(filters.messageId),
-                limit: filters.limit,
-            }),
-        });
-    }
-    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported event operation "${operation}"`, {
-        itemIndex,
-    });
 }
 async function executeWebhookDeliveryOperation(itemIndex, operation) {
-    if (operation === 'getMany') {
-        const filters = this.getNodeParameter('webhookDeliveryFilters', itemIndex, {});
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'GET',
-            path: '/webhooks/deliveries',
-            qs: cleanObject({
-                status: getOptionalString(filters.status),
-                event_id: getOptionalString(filters.eventId),
-                since: getOptionalString(filters.since),
-                limit: filters.limit,
-            }),
-        });
+    switch (operation) {
+        case 'getMany': {
+            const filters = this.getNodeParameter('webhookDeliveryFilters', itemIndex, {});
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: '/webhooks/deliveries',
+                qs: cleanObject({
+                    status: getOptionalString(filters.status),
+                    event_id: getOptionalString(filters.eventId),
+                    since: getOptionalString(filters.since),
+                    limit: filters.limit,
+                }),
+            });
+        }
+        case 'retry':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'POST',
+                path: `/webhooks/deliveries/${encodeURIComponent(this.getNodeParameter('deliveryId', itemIndex))}/retry`,
+            });
+        default:
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported webhook delivery operation "${operation}"`, {
+                itemIndex,
+            });
     }
-    if (operation === 'retry') {
-        const deliveryId = this.getNodeParameter('deliveryId', itemIndex);
-        return await baileysRequest.call(this, itemIndex, {
-            method: 'POST',
-            path: `/webhooks/deliveries/${encodeURIComponent(deliveryId)}/retry`,
-        });
-    }
-    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `Unsupported webhook delivery operation "${operation}"`, {
-        itemIndex,
-    });
 }
 async function executeCustomApiRequest(itemIndex) {
     const method = this.getNodeParameter('customMethod', itemIndex);
@@ -1883,6 +2197,25 @@ async function executeCustomApiRequest(itemIndex) {
             error: toErrorJson(error),
         };
     }
+}
+async function executeSnapshotList(itemIndex, path) {
+    const filters = this.getNodeParameter('snapshotFilters', itemIndex, {});
+    return await baileysRequest.call(this, itemIndex, {
+        method: 'GET',
+        path,
+        qs: cleanObject({
+            limit: filters.limit,
+        }),
+    });
+}
+async function executePrivacyValuePatch(itemIndex, path, propertyName) {
+    return await baileysRequest.call(this, itemIndex, {
+        method: 'PATCH',
+        path,
+        body: {
+            value: this.getNodeParameter(propertyName, itemIndex),
+        },
+    });
 }
 async function baileysRequest(itemIndex, options) {
     const credentials = (await this.getCredentials('baileysInstanceApi'));
@@ -1955,15 +2288,9 @@ function getTextBatchItems(itemIndex) {
         });
     });
 }
-function getMediaBatchItems(itemIndex, usePreviewSwitch = false) {
+function getMediaBatchItems(itemIndex, propertyName) {
     var _a;
-    if (usePreviewSwitch) {
-        const batchType = this.getNodeParameter('batchPreviewType', itemIndex);
-        if (batchType === 'text') {
-            return getTextBatchItems.call(this, itemIndex);
-        }
-    }
-    const collection = this.getNodeParameter('mediaBatchItems', itemIndex, {});
+    const collection = this.getNodeParameter(propertyName, itemIndex, {});
     return ((_a = collection.values) !== null && _a !== void 0 ? _a : []).map((entry) => cleanObject({
         to: entry.to,
         media_url: entry.mediaUrl,
@@ -1991,12 +2318,17 @@ function getMessageReceiptIds(itemIndex) {
         .map((entry) => { var _a; return (_a = entry.messageId) === null || _a === void 0 ? void 0 : _a.trim(); })
         .filter((value) => Boolean(value));
 }
+function getJidCollection(itemIndex, propertyName) {
+    var _a;
+    const collection = this.getNodeParameter(propertyName, itemIndex, {});
+    return ((_a = collection.values) !== null && _a !== void 0 ? _a : [])
+        .map((entry) => { var _a; return (_a = entry.jid) === null || _a === void 0 ? void 0 : _a.trim(); })
+        .filter((value) => Boolean(value));
+}
 function getNameValuePairs(itemIndex, propertyName) {
     var _a;
-    const shouldReadQuery = propertyName !== 'customQueryParameters'
-        || this.getNodeParameter('sendCustomQuery', itemIndex, false);
-    const shouldReadBody = propertyName !== 'customHeaders';
-    if (!shouldReadQuery && !shouldReadBody) {
+    if (propertyName === 'customQueryParameters'
+        && !this.getNodeParameter('sendCustomQuery', itemIndex, false)) {
         return undefined;
     }
     const collection = this.getNodeParameter(propertyName, itemIndex, {});
@@ -2028,13 +2360,20 @@ function getCustomBody(itemIndex) {
         });
     }
 }
+function ensureNonEmptyBody(itemIndex, body, label) {
+    if (Object.keys(body).length > 0) {
+        return;
+    }
+    throw new n8n_workflow_1.NodeOperationError(this.getNode(), `${label} must include at least one value`, {
+        itemIndex,
+    });
+}
 function resolveIdempotencyKey(itemIndex, prefix, additionalOptions) {
     const manualKey = getOptionalString(additionalOptions.idempotencyKey);
     if (manualKey) {
         return manualKey;
     }
-    const shouldGenerate = additionalOptions.generateIdempotencyKey !== false;
-    if (!shouldGenerate) {
+    if (additionalOptions.generateIdempotencyKey === false) {
         return undefined;
     }
     return `${prefix}-${Date.now()}-${itemIndex}`;
@@ -2062,7 +2401,7 @@ function getOptionalString(value) {
         return undefined;
     }
     const trimmed = value.trim();
-    return trimmed ? trimmed : undefined;
+    return trimmed || undefined;
 }
 function getOptionalNumber(value) {
     if (typeof value !== 'number' || Number.isNaN(value) || value <= 0) {
@@ -2080,9 +2419,7 @@ function toNodeJson(data) {
     if (data && typeof data === 'object' && !Array.isArray(data)) {
         return data;
     }
-    return {
-        data: data,
-    };
+    return { data: data };
 }
 function toErrorJson(error) {
     if (error instanceof Error) {
@@ -2095,16 +2432,14 @@ function toErrorJson(error) {
             context: candidate.context,
         });
     }
-    return {
-        message: String(error),
-    };
+    return { message: String(error) };
 }
 function enrichError(error, itemIndex) {
-    const hint = getErrorHint(error);
     if (error instanceof n8n_workflow_1.NodeOperationError || error instanceof n8n_workflow_1.NodeApiError) {
         return error;
     }
     if (error instanceof Error) {
+        const hint = getErrorHint(error);
         return new n8n_workflow_1.NodeApiError(this.getNode(), error, {
             itemIndex,
             message: hint ? `${error.message} ${hint}` : error.message,
@@ -2113,17 +2448,27 @@ function enrichError(error, itemIndex) {
     return new n8n_workflow_1.NodeOperationError(this.getNode(), String(error), { itemIndex });
 }
 function getErrorHint(error) {
-    var _a, _b;
+    var _a, _b, _c;
     const candidate = error;
     const message = (_a = candidate === null || candidate === void 0 ? void 0 : candidate.message) !== null && _a !== void 0 ? _a : '';
-    const httpCode = (_b = candidate === null || candidate === void 0 ? void 0 : candidate.httpCode) !== null && _b !== void 0 ? _b : '';
+    const httpCode = (_b = candidate === null || candidate === void 0 ? void 0 : candidate.httpCode) !== null && _b !== void 0 ? _b : String((_c = candidate === null || candidate === void 0 ? void 0 : candidate.statusCode) !== null && _c !== void 0 ? _c : '');
+    const lowerMessage = message.toLowerCase();
     if (httpCode === '409') {
-        return 'The same idempotency key was likely reused with a different payload.';
+        if (lowerMessage.includes('idempot')) {
+            return 'The same idempotency key was likely reused with a different payload.';
+        }
+        return 'The backend reported that this capability is not available in the current socket or state.';
     }
-    if (message.includes('without qr pairing method')) {
+    if (httpCode === '404') {
+        return 'The referenced resource was not found in the backend.';
+    }
+    if (httpCode === '400' && lowerMessage.includes('group')) {
+        return 'Check that the JID belongs to a real WhatsApp group.';
+    }
+    if (lowerMessage.includes('without qr pairing method')) {
         return 'The instance may be configured with WA_PAIRING_METHOD=code instead of qr.';
     }
-    if (message.includes('without code pairing method')) {
+    if (lowerMessage.includes('without code pairing method')) {
         return 'The instance may be configured with WA_PAIRING_METHOD=qr instead of code.';
     }
     return '';
