@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-baileys-instance",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"description": "n8n community node for the wa-instance API built on top of Baileys 7.",
 	"license": "MIT",
 	"homepage": "https://github.com/mikiguillamon/n8n-nodes-baileys7gh",
@@ -30,6 +30,7 @@
 		"prepublishOnly": "npm run lint && npm run build",
 		"publish:manual": "npm publish --access public",
 		"smoke": "npm run lint && npm run build",
+		"test": "node --test tests/**/*.test.js",
 		"typecheck": "tsc --noEmit",
 		"release": "n8n-node release"
 	},

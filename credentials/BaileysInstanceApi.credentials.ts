@@ -43,7 +43,7 @@ export class BaileysInstanceApi implements ICredentialType {
 			name: 'timeout',
 			type: 'number',
 			default: 30000,
-			description: 'Request timeout in milliseconds',
+			description: 'Request timeout in milliseconds. Increase it when sends can stay queued or proxied for longer.',
 		},
 		{
 			displayName: 'Allow Self-Signed TLS Certificates',

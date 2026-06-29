@@ -110,6 +110,12 @@ const chatOperations = createOperationProperty('chat', 'getMany', [
         action: 'Get many chats',
     },
     {
+        name: 'Get Recent Messages',
+        value: 'getRecentMessages',
+        description: 'List recently persisted messages for a chat',
+        action: 'Get recent chat messages',
+    },
+    {
         name: 'Archive',
         value: 'archive',
         description: 'Archive or unarchive a chat',
@@ -608,6 +614,24 @@ const operationProperties = [
             },
             { displayName: 'Idempotency Key', name: 'idempotencyKey', type: 'string', default: '' },
             { displayName: 'MIME Type', name: 'mimeType', type: 'string', default: '' },
+            {
+                displayName: 'Preflight Readiness Check',
+                name: 'preflightReadinessCheck',
+                type: 'boolean',
+                default: false,
+                description: 'Whether to run a readiness check before send operations to catch pairing and dependency issues earlier',
+            },
+            {
+                displayName: 'Readiness Check Mode',
+                name: 'preflightReadinessMode',
+                type: 'options',
+                default: 'dependenciesHealth',
+                options: [
+                    { name: 'Dependencies Health', value: 'dependenciesHealth' },
+                    { name: 'Status', value: 'status' },
+                ],
+                description: 'Dependencies Health is strict readiness. Status is looser and depends on the backend status payload shape.',
+            },
         ],
     },
     {
@@ -914,6 +938,24 @@ const operationProperties = [
         options: [
             { displayName: 'Generate Automatically', name: 'generateIdempotencyKey', type: 'boolean', default: true },
             { displayName: 'Idempotency Key', name: 'idempotencyKey', type: 'string', default: '' },
+            {
+                displayName: 'Preflight Readiness Check',
+                name: 'preflightReadinessCheck',
+                type: 'boolean',
+                default: false,
+                description: 'Whether to run a readiness check before batch send operations to catch pairing and dependency issues earlier',
+            },
+            {
+                displayName: 'Readiness Check Mode',
+                name: 'preflightReadinessMode',
+                type: 'options',
+                default: 'dependenciesHealth',
+                options: [
+                    { name: 'Dependencies Health', value: 'dependenciesHealth' },
+                    { name: 'Status', value: 'status' },
+                ],
+                description: 'Dependencies Health is strict readiness. Status is looser and depends on the backend status payload shape.',
+            },
         ],
     },
     {
@@ -966,7 +1008,7 @@ const operationProperties = [
                 type: 'number',
                 default: 50,
                 description: 'Max number of results to return',
-                typeOptions: { minValue: 1, maxValue: 100 },
+                typeOptions: { minValue: 1, maxValue: 1000 },
             },
         ],
     },
@@ -976,7 +1018,7 @@ const operationProperties = [
         type: 'string',
         default: '',
         displayOptions: {
-            show: { resource: ['chat'], operation: ['archive', 'mute', 'setReadState'] },
+            show: { resource: ['chat'], operation: ['getRecentMessages', 'archive', 'mute', 'setReadState'] },
         },
     },
     {
@@ -1022,6 +1064,17 @@ const operationProperties = [
         default: true,
         displayOptions: {
             show: { resource: ['chat'], operation: ['setReadState'] },
+        },
+    },
+    {
+        displayName: 'Limit',
+        name: 'chatMessagesLimit',
+        type: 'number',
+        default: 10,
+        description: 'Max number of recent messages to return',
+        typeOptions: { minValue: 1, maxValue: 100 },
+        displayOptions: {
+            show: { resource: ['chat'], operation: ['getRecentMessages'] },
         },
     },
     {
@@ -1555,10 +1608,7 @@ class BaileysInstance {
                 const resource = this.getNodeParameter('resource', itemIndex);
                 const operation = this.getNodeParameter('operation', itemIndex);
                 const responseData = await executeResourceOperation.call(this, itemIndex, resource, operation);
-                results.push({
-                    json: toNodeJson(responseData),
-                    pairedItem: itemIndex,
-                });
+                results.push(...toNodeExecutionData(responseData, itemIndex, resource, operation));
             }
             catch (error) {
                 if (this.continueOnFail()) {
@@ -1718,6 +1768,14 @@ async function executeChatOperation(itemIndex, operation) {
     switch (operation) {
         case 'getMany':
             return await executeSnapshotList.call(this, itemIndex, '/chats');
+        case 'getRecentMessages':
+            return await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: `/chats/${encodeURIComponent(this.getNodeParameter('chatJid', itemIndex))}/messages`,
+                qs: {
+                    limit: this.getNodeParameter('chatMessagesLimit', itemIndex),
+                },
+            });
         case 'archive':
             return await baileysRequest.call(this, itemIndex, {
                 method: 'POST',
@@ -1866,6 +1924,7 @@ async function executeMessageOperation(itemIndex, operation) {
         case 'sendText': {
             const body = buildTextPayload.call(this, itemIndex, 'send');
             const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {});
+            await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
             return await baileysRequest.call(this, itemIndex, {
                 method: 'POST',
                 path: '/send/text',
@@ -1875,6 +1934,7 @@ async function executeMessageOperation(itemIndex, operation) {
         }
         case 'sendMedia': {
             const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {});
+            await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
             return await baileysRequest.call(this, itemIndex, {
                 method: 'POST',
                 path: '/send/media',
@@ -2024,6 +2084,7 @@ async function executeBatchOperation(itemIndex, operation) {
     switch (operation) {
         case 'sendTextBatch': {
             const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {});
+            await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
             return await baileysRequest.call(this, itemIndex, {
                 method: 'POST',
                 path: '/send/batch/text',
@@ -2033,6 +2094,7 @@ async function executeBatchOperation(itemIndex, operation) {
         }
         case 'sendMediaBatch': {
             const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {});
+            await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
             return await baileysRequest.call(this, itemIndex, {
                 method: 'POST',
                 path: '/send/batch/media',
@@ -2220,6 +2282,8 @@ async function executePrivacyValuePatch(itemIndex, path, propertyName) {
 async function baileysRequest(itemIndex, options) {
     const credentials = (await this.getCredentials('baileysInstanceApi'));
     const baseUrl = normalizeBaseUrl(credentials.baseUrl);
+    const path = ensureRelativePath(options.path);
+    const timeoutMs = Number(credentials.timeout || 30000);
     const headers = {
         Accept: 'application/json',
         ...options.headers,
@@ -2232,10 +2296,10 @@ async function baileysRequest(itemIndex, options) {
     }
     const requestOptions = {
         method: options.method,
-        url: `${baseUrl}${ensureRelativePath(options.path)}`,
+        url: `${baseUrl}${path}`,
         headers,
         skipSslCertificateValidation: Boolean(credentials.tlsAllowSelfSigned),
-        timeout: Number(credentials.timeout || 30000),
+        timeout: timeoutMs,
         json: true,
     };
     if (options.body !== undefined) {
@@ -2244,7 +2308,77 @@ async function baileysRequest(itemIndex, options) {
     if (options.qs && Object.keys(options.qs).length > 0) {
         requestOptions.qs = options.qs;
     }
-    return await this.helpers.httpRequestWithAuthentication.call(this, 'baileysInstanceApi', requestOptions);
+    try {
+        return await this.helpers.httpRequestWithAuthentication.call(this, 'baileysInstanceApi', requestOptions);
+    }
+    catch (error) {
+        throw attachRequestContext(error, {
+            method: options.method,
+            path,
+            timeoutMs,
+        });
+    }
+}
+async function runPreflightReadinessCheck(itemIndex, additionalOptions) {
+    if (additionalOptions.preflightReadinessCheck !== true) {
+        return;
+    }
+    const mode = getReadinessCheckMode(additionalOptions);
+    if (mode === 'dependenciesHealth') {
+        try {
+            await baileysRequest.call(this, itemIndex, {
+                method: 'GET',
+                path: '/health/deps',
+            });
+            return;
+        }
+        catch (error) {
+            throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Preflight readiness check failed before sending.', {
+                itemIndex,
+                description: `The backend is authenticated but not ready for send operations yet. Run Get Status, Get Dependencies Health and Get Queue Status to diagnose the instance before retrying. Root error: ${getErrorMessage(error)}`,
+            });
+        }
+    }
+    const statusResponse = await baileysRequest.call(this, itemIndex, {
+        method: 'GET',
+        path: '/status',
+    });
+    const readiness = inferStatusReadiness(statusResponse);
+    if (readiness === 'ready' || readiness === 'unknown') {
+        return;
+    }
+    throw new n8n_workflow_1.NodeOperationError(this.getNode(), 'Preflight readiness check failed before sending.', {
+        itemIndex,
+        description: 'The status payload suggests the WhatsApp session is not open yet. Check pairing, reconnect the socket, or switch the readiness check mode to Dependencies Health for a stricter preflight.',
+    });
+}
+function getReadinessCheckMode(additionalOptions) {
+    return additionalOptions.preflightReadinessMode === 'status' ? 'status' : 'dependenciesHealth';
+}
+function inferStatusReadiness(statusResponse) {
+    if (!statusResponse || typeof statusResponse !== 'object') {
+        return 'unknown';
+    }
+    const serialized = JSON.stringify(statusResponse).toLowerCase();
+    const readySignals = ['"connection":"open"', '"connection_state":"open"', '"state":"open"', 'connected', 'ready'];
+    const notReadySignals = [
+        '"connection":"close"',
+        '"connection":"closed"',
+        '"connection":"connecting"',
+        '"state":"connecting"',
+        '"state":"closed"',
+        'pairing',
+        'qr',
+        'offline',
+        'disconnected',
+    ];
+    if (readySignals.some((signal) => serialized.includes(signal))) {
+        return 'ready';
+    }
+    if (notReadySignals.some((signal) => serialized.includes(signal))) {
+        return 'notReady';
+    }
+    return 'unknown';
 }
 function buildTextPayload(itemIndex, mode) {
     const payload = {
@@ -2396,6 +2530,27 @@ function ensureRelativePath(path) {
 function cleanObject(input) {
     return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined && value !== '' && value !== null));
 }
+function attachRequestContext(error, requestContext) {
+    var _a, _b, _c;
+    if (error instanceof Error) {
+        const candidate = error;
+        candidate.context = cleanObject({
+            ...((_a = candidate.context) !== null && _a !== void 0 ? _a : {}),
+            method: requestContext.method,
+            path: requestContext.path,
+            timeoutMs: requestContext.timeoutMs,
+            errorCode: (_c = (_b = candidate.code) !== null && _b !== void 0 ? _b : candidate.errno) !== null && _c !== void 0 ? _c : candidate.httpCode,
+        });
+        return candidate;
+    }
+    const wrapped = new Error(String(error));
+    wrapped.context = {
+        method: requestContext.method,
+        path: requestContext.path,
+        timeoutMs: requestContext.timeoutMs,
+    };
+    return wrapped;
+}
 function getOptionalString(value) {
     if (typeof value !== 'string') {
         return undefined;
@@ -2421,12 +2576,41 @@ function toNodeJson(data) {
     }
     return { data: data };
 }
+function toNodeExecutionData(data, itemIndex, resource, operation) {
+    if (resource === 'chat' && operation === 'getRecentMessages') {
+        const items = getResponseItems(data);
+        if (items) {
+            return items.map((item) => ({
+                json: toNodeJson(item),
+                pairedItem: itemIndex,
+            }));
+        }
+    }
+    return [
+        {
+            json: toNodeJson(data),
+            pairedItem: itemIndex,
+        },
+    ];
+}
+function getResponseItems(data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        return undefined;
+    }
+    const candidate = data.items;
+    if (!Array.isArray(candidate)) {
+        return undefined;
+    }
+    return candidate
+        .filter((item) => Boolean(item) && typeof item === 'object' && !Array.isArray(item));
+}
 function toErrorJson(error) {
     if (error instanceof Error) {
         const candidate = error;
         return cleanObject({
             name: candidate.name,
             message: candidate.message,
+            code: candidate.code,
             httpCode: candidate.httpCode,
             description: candidate.description,
             context: candidate.context,
@@ -2435,12 +2619,21 @@ function toErrorJson(error) {
     return { message: String(error) };
 }
 function enrichError(error, itemIndex) {
-    if (error instanceof n8n_workflow_1.NodeOperationError || error instanceof n8n_workflow_1.NodeApiError) {
+    if (error instanceof n8n_workflow_1.NodeOperationError) {
         return error;
     }
     if (error instanceof Error) {
         const hint = getErrorHint(error);
-        return new n8n_workflow_1.NodeApiError(this.getNode(), error, {
+        const candidate = error;
+        const errorJson = cleanObject({
+            name: candidate.name,
+            message: candidate.message,
+            code: candidate.code,
+            httpCode: candidate.httpCode,
+            description: candidate.description,
+            context: candidate.context,
+        });
+        return new n8n_workflow_1.NodeApiError(this.getNode(), errorJson, {
             itemIndex,
             message: hint ? `${error.message} ${hint}` : error.message,
         });
@@ -2448,10 +2641,12 @@ function enrichError(error, itemIndex) {
     return new n8n_workflow_1.NodeOperationError(this.getNode(), String(error), { itemIndex });
 }
 function getErrorHint(error) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f;
     const candidate = error;
     const message = (_a = candidate === null || candidate === void 0 ? void 0 : candidate.message) !== null && _a !== void 0 ? _a : '';
     const httpCode = (_b = candidate === null || candidate === void 0 ? void 0 : candidate.httpCode) !== null && _b !== void 0 ? _b : String((_c = candidate === null || candidate === void 0 ? void 0 : candidate.statusCode) !== null && _c !== void 0 ? _c : '');
+    const errorCode = (_e = (_d = candidate === null || candidate === void 0 ? void 0 : candidate.code) !== null && _d !== void 0 ? _d : candidate === null || candidate === void 0 ? void 0 : candidate.errno) !== null && _e !== void 0 ? _e : '';
+    const path = typeof ((_f = candidate === null || candidate === void 0 ? void 0 : candidate.context) === null || _f === void 0 ? void 0 : _f.path) === 'string' ? String(candidate.context.path) : '';
     const lowerMessage = message.toLowerCase();
     if (httpCode === '409') {
         if (lowerMessage.includes('idempot')) {
@@ -2462,11 +2657,20 @@ function getErrorHint(error) {
     if (httpCode === '404') {
         return 'The referenced resource was not found in the backend.';
     }
-    if (httpCode === '503' && lowerMessage.includes('/health/deps')) {
+    if (httpCode === '503' && (lowerMessage.includes('/health/deps') || path === '/health/deps')) {
         return 'The backend is reachable, but one or more dependencies are not ready yet. If the instance is still waiting for pairing, check Get Status and Get Pairing QR.';
     }
     if (httpCode === '400' && lowerMessage.includes('group')) {
         return 'Check that the JID belongs to a real WhatsApp group.';
+    }
+    if (errorCode === 'ECONNABORTED' || errorCode === 'ETIMEDOUT' || lowerMessage.includes('timeout')) {
+        return 'The request timed out or was aborted before the backend answered. Increase the credential timeout, check reverse-proxy time limits, review the backend queue health, and confirm the WhatsApp socket is ready before sending.';
+    }
+    if (errorCode === 'ECONNRESET'
+        || lowerMessage.includes('socket hang up')
+        || lowerMessage.includes('socket closed')
+        || lowerMessage.includes('connection reset')) {
+        return 'The backend or an upstream proxy closed the connection unexpectedly. Check wa-instance logs, reverse-proxy timeouts and whether the service restarted during the request.';
     }
     if (lowerMessage.includes('without qr pairing method')) {
         return 'The instance may be configured with WA_PAIRING_METHOD=code instead of qr.';
@@ -2475,5 +2679,11 @@ function getErrorHint(error) {
         return 'The instance may be configured with WA_PAIRING_METHOD=qr instead of code.';
     }
     return '';
+}
+function getErrorMessage(error) {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+    return String(error);
 }
 //# sourceMappingURL=BaileysInstance.node.js.map

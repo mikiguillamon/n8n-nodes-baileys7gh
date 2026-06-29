@@ -39,6 +39,14 @@ type BaileysCredentials = {
 	tlsAllowSelfSigned?: boolean;
 };
 
+type ReadinessCheckMode = 'status' | 'dependenciesHealth';
+
+type RequestContext = {
+	method: HttpMethod;
+	path: string;
+	timeoutMs: number;
+};
+
 const resourceProperty: INodeProperties = {
 	displayName: 'Resource',
 	name: 'resource',
@@ -149,6 +157,12 @@ const chatOperations = createOperationProperty('chat', 'getMany', [
 		value: 'getMany',
 		description: 'List persisted chat snapshots',
 		action: 'Get many chats',
+	},
+	{
+		name: 'Get Recent Messages',
+		value: 'getRecentMessages',
+		description: 'List recently persisted messages for a chat',
+		action: 'Get recent chat messages',
 	},
 	{
 		name: 'Archive',
@@ -659,6 +673,26 @@ const operationProperties: INodeProperties[] = [
 			},
 			{ displayName: 'Idempotency Key', name: 'idempotencyKey', type: 'string', default: '' },
 			{ displayName: 'MIME Type', name: 'mimeType', type: 'string', default: '' },
+			{
+				displayName: 'Preflight Readiness Check',
+				name: 'preflightReadinessCheck',
+				type: 'boolean',
+				default: false,
+				description:
+					'Whether to run a readiness check before send operations to catch pairing and dependency issues earlier',
+			},
+			{
+				displayName: 'Readiness Check Mode',
+				name: 'preflightReadinessMode',
+				type: 'options',
+				default: 'dependenciesHealth',
+				options: [
+					{ name: 'Dependencies Health', value: 'dependenciesHealth' },
+					{ name: 'Status', value: 'status' },
+				],
+				description:
+					'Dependencies Health is strict readiness. Status is looser and depends on the backend status payload shape.',
+			},
 		],
 	},
 	{
@@ -965,6 +999,26 @@ const operationProperties: INodeProperties[] = [
 		options: [
 			{ displayName: 'Generate Automatically', name: 'generateIdempotencyKey', type: 'boolean', default: true },
 			{ displayName: 'Idempotency Key', name: 'idempotencyKey', type: 'string', default: '' },
+			{
+				displayName: 'Preflight Readiness Check',
+				name: 'preflightReadinessCheck',
+				type: 'boolean',
+				default: false,
+				description:
+					'Whether to run a readiness check before batch send operations to catch pairing and dependency issues earlier',
+			},
+			{
+				displayName: 'Readiness Check Mode',
+				name: 'preflightReadinessMode',
+				type: 'options',
+				default: 'dependenciesHealth',
+				options: [
+					{ name: 'Dependencies Health', value: 'dependenciesHealth' },
+					{ name: 'Status', value: 'status' },
+				],
+				description:
+					'Dependencies Health is strict readiness. Status is looser and depends on the backend status payload shape.',
+			},
 		],
 	},
 	{
@@ -1017,7 +1071,7 @@ const operationProperties: INodeProperties[] = [
 				type: 'number',
 				default: 50,
 				description: 'Max number of results to return',
-				typeOptions: { minValue: 1, maxValue: 100 },
+				typeOptions: { minValue: 1, maxValue: 1000 },
 			},
 		],
 	},
@@ -1027,7 +1081,7 @@ const operationProperties: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		displayOptions: {
-			show: { resource: ['chat'], operation: ['archive', 'mute', 'setReadState'] },
+			show: { resource: ['chat'], operation: ['getRecentMessages', 'archive', 'mute', 'setReadState'] },
 		},
 	},
 	{
@@ -1073,6 +1127,17 @@ const operationProperties: INodeProperties[] = [
 		default: true,
 		displayOptions: {
 			show: { resource: ['chat'], operation: ['setReadState'] },
+		},
+	},
+	{
+		displayName: 'Limit',
+		name: 'chatMessagesLimit',
+		type: 'number',
+		default: 10,
+		description: 'Max number of recent messages to return',
+		typeOptions: { minValue: 1, maxValue: 100 },
+		displayOptions: {
+			show: { resource: ['chat'], operation: ['getRecentMessages'] },
 		},
 	},
 	{
@@ -1608,11 +1673,7 @@ export class BaileysInstance implements INodeType {
 				const operation = this.getNodeParameter('operation', itemIndex) as string;
 
 				const responseData = await executeResourceOperation.call(this, itemIndex, resource, operation);
-
-				results.push({
-					json: toNodeJson(responseData),
-					pairedItem: itemIndex,
-				});
+				results.push(...toNodeExecutionData(responseData, itemIndex, resource, operation));
 			} catch (error) {
 				if (this.continueOnFail()) {
 					results.push({
@@ -1807,6 +1868,14 @@ async function executeChatOperation(
 	switch (operation) {
 		case 'getMany':
 			return await executeSnapshotList.call(this, itemIndex, '/chats');
+		case 'getRecentMessages':
+			return await baileysRequest.call(this, itemIndex, {
+				method: 'GET',
+				path: `/chats/${encodeURIComponent(this.getNodeParameter('chatJid', itemIndex) as string)}/messages`,
+				qs: {
+					limit: this.getNodeParameter('chatMessagesLimit', itemIndex) as number,
+				},
+			});
 		case 'archive':
 			return await baileysRequest.call(this, itemIndex, {
 				method: 'POST',
@@ -1972,6 +2041,7 @@ async function executeMessageOperation(
 		case 'sendText': {
 			const body = buildTextPayload.call(this, itemIndex, 'send');
 			const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {}) as IDataObject;
+			await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
 			return await baileysRequest.call(this, itemIndex, {
 				method: 'POST',
 				path: '/send/text',
@@ -1981,6 +2051,7 @@ async function executeMessageOperation(
 		}
 		case 'sendMedia': {
 			const additionalOptions = this.getNodeParameter('messageAdditionalOptions', itemIndex, {}) as IDataObject;
+			await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
 			return await baileysRequest.call(this, itemIndex, {
 				method: 'POST',
 				path: '/send/media',
@@ -2140,6 +2211,7 @@ async function executeBatchOperation(
 	switch (operation) {
 		case 'sendTextBatch': {
 			const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {}) as IDataObject;
+			await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
 			return await baileysRequest.call(this, itemIndex, {
 				method: 'POST',
 				path: '/send/batch/text',
@@ -2149,6 +2221,7 @@ async function executeBatchOperation(
 		}
 		case 'sendMediaBatch': {
 			const additionalOptions = this.getNodeParameter('batchAdditionalOptions', itemIndex, {}) as IDataObject;
+			await runPreflightReadinessCheck.call(this, itemIndex, additionalOptions);
 			return await baileysRequest.call(this, itemIndex, {
 				method: 'POST',
 				path: '/send/batch/media',
@@ -2387,6 +2460,8 @@ async function baileysRequest(
 ): Promise<unknown> {
 	const credentials = (await this.getCredentials('baileysInstanceApi')) as unknown as BaileysCredentials;
 	const baseUrl = normalizeBaseUrl(credentials.baseUrl);
+	const path = ensureRelativePath(options.path);
+	const timeoutMs = Number(credentials.timeout || 30000);
 	const headers: IDataObject = {
 		Accept: 'application/json',
 		...options.headers,
@@ -2402,10 +2477,10 @@ async function baileysRequest(
 
 	const requestOptions: IHttpRequestOptions = {
 		method: options.method,
-		url: `${baseUrl}${ensureRelativePath(options.path)}`,
+		url: `${baseUrl}${path}`,
 		headers,
 		skipSslCertificateValidation: Boolean(credentials.tlsAllowSelfSigned),
-		timeout: Number(credentials.timeout || 30000),
+		timeout: timeoutMs,
 		json: true,
 	};
 
@@ -2417,11 +2492,98 @@ async function baileysRequest(
 		requestOptions.qs = options.qs;
 	}
 
-	return await this.helpers.httpRequestWithAuthentication.call(
-		this,
-		'baileysInstanceApi',
-		requestOptions,
-	);
+	try {
+		return await this.helpers.httpRequestWithAuthentication.call(
+			this,
+			'baileysInstanceApi',
+			requestOptions,
+		);
+	} catch (error) {
+		throw attachRequestContext(error, {
+			method: options.method,
+			path,
+			timeoutMs,
+		});
+	}
+}
+
+async function runPreflightReadinessCheck(
+	this: IExecuteFunctions,
+	itemIndex: number,
+	additionalOptions: IDataObject,
+): Promise<void> {
+	if (additionalOptions.preflightReadinessCheck !== true) {
+		return;
+	}
+
+	const mode = getReadinessCheckMode(additionalOptions);
+	if (mode === 'dependenciesHealth') {
+		try {
+			await baileysRequest.call(this, itemIndex, {
+				method: 'GET',
+				path: '/health/deps',
+			});
+			return;
+		} catch (error) {
+			throw new NodeOperationError(
+				this.getNode(),
+				'Preflight readiness check failed before sending.',
+				{
+					itemIndex,
+					description: `The backend is authenticated but not ready for send operations yet. Run Get Status, Get Dependencies Health and Get Queue Status to diagnose the instance before retrying. Root error: ${getErrorMessage(error)}`,
+				},
+			);
+		}
+	}
+
+	const statusResponse = await baileysRequest.call(this, itemIndex, {
+		method: 'GET',
+		path: '/status',
+	});
+	const readiness = inferStatusReadiness(statusResponse);
+	if (readiness === 'ready' || readiness === 'unknown') {
+		return;
+	}
+
+	throw new NodeOperationError(this.getNode(), 'Preflight readiness check failed before sending.', {
+		itemIndex,
+		description:
+			'The status payload suggests the WhatsApp session is not open yet. Check pairing, reconnect the socket, or switch the readiness check mode to Dependencies Health for a stricter preflight.',
+	});
+}
+
+function getReadinessCheckMode(additionalOptions: IDataObject): ReadinessCheckMode {
+	return additionalOptions.preflightReadinessMode === 'status' ? 'status' : 'dependenciesHealth';
+}
+
+function inferStatusReadiness(statusResponse: unknown): 'ready' | 'notReady' | 'unknown' {
+	if (!statusResponse || typeof statusResponse !== 'object') {
+		return 'unknown';
+	}
+
+	const serialized = JSON.stringify(statusResponse).toLowerCase();
+	const readySignals = ['"connection":"open"', '"connection_state":"open"', '"state":"open"', 'connected', 'ready'];
+	const notReadySignals = [
+		'"connection":"close"',
+		'"connection":"closed"',
+		'"connection":"connecting"',
+		'"state":"connecting"',
+		'"state":"closed"',
+		'pairing',
+		'qr',
+		'offline',
+		'disconnected',
+	];
+
+	if (readySignals.some((signal) => serialized.includes(signal))) {
+		return 'ready';
+	}
+
+	if (notReadySignals.some((signal) => serialized.includes(signal))) {
+		return 'notReady';
+	}
+
+	return 'unknown';
 }
 
 function buildTextPayload(
@@ -2656,6 +2818,35 @@ function cleanObject(input: IDataObject): IDataObject {
 	) as IDataObject;
 }
 
+function attachRequestContext(error: unknown, requestContext: RequestContext): Error {
+	if (error instanceof Error) {
+		const candidate = error as Error & {
+			context?: IDataObject;
+			code?: string;
+			errno?: string;
+			httpCode?: string;
+		};
+
+		candidate.context = cleanObject({
+			...(candidate.context ?? {}),
+			method: requestContext.method,
+			path: requestContext.path,
+			timeoutMs: requestContext.timeoutMs,
+			errorCode: candidate.code ?? candidate.errno ?? candidate.httpCode,
+		});
+
+		return candidate;
+	}
+
+	const wrapped = new Error(String(error)) as Error & { context?: IDataObject };
+	wrapped.context = {
+		method: requestContext.method,
+		path: requestContext.path,
+		timeoutMs: requestContext.timeoutMs,
+	};
+	return wrapped;
+}
+
 function getOptionalString(value: unknown): string | undefined {
 	if (typeof value !== 'string') {
 		return undefined;
@@ -2686,9 +2877,48 @@ function toNodeJson(data: unknown): IDataObject {
 	return { data: data as GenericValue };
 }
 
+function toNodeExecutionData(
+	data: unknown,
+	itemIndex: number,
+	resource: Resource,
+	operation: string,
+): INodeExecutionData[] {
+	if (resource === 'chat' && operation === 'getRecentMessages') {
+		const items = getResponseItems(data);
+		if (items) {
+			return items.map((item) => ({
+				json: toNodeJson(item),
+				pairedItem: itemIndex,
+			}));
+		}
+	}
+
+	return [
+		{
+			json: toNodeJson(data),
+			pairedItem: itemIndex,
+		},
+	];
+}
+
+function getResponseItems(data: unknown): IDataObject[] | undefined {
+	if (!data || typeof data !== 'object' || Array.isArray(data)) {
+		return undefined;
+	}
+
+	const candidate = (data as IDataObject).items;
+	if (!Array.isArray(candidate)) {
+		return undefined;
+	}
+
+	return candidate
+		.filter((item): item is IDataObject => Boolean(item) && typeof item === 'object' && !Array.isArray(item));
+}
+
 function toErrorJson(error: unknown): IDataObject {
 	if (error instanceof Error) {
 		const candidate = error as Error & {
+			code?: string;
 			httpCode?: string;
 			description?: string;
 			context?: IDataObject;
@@ -2697,6 +2927,7 @@ function toErrorJson(error: unknown): IDataObject {
 		return cleanObject({
 			name: candidate.name,
 			message: candidate.message,
+			code: candidate.code,
 			httpCode: candidate.httpCode,
 			description: candidate.description,
 			context: candidate.context,
@@ -2707,13 +2938,27 @@ function toErrorJson(error: unknown): IDataObject {
 }
 
 function enrichError(this: IExecuteFunctions, error: unknown, itemIndex: number): Error {
-	if (error instanceof NodeOperationError || error instanceof NodeApiError) {
+	if (error instanceof NodeOperationError) {
 		return error;
 	}
 
 	if (error instanceof Error) {
 		const hint = getErrorHint(error);
-		return new NodeApiError(this.getNode(), error as unknown as JsonObject, {
+		const candidate = error as Error & {
+			code?: string;
+			httpCode?: string;
+			description?: string;
+			context?: IDataObject;
+		};
+		const errorJson = cleanObject({
+			name: candidate.name,
+			message: candidate.message,
+			code: candidate.code,
+			httpCode: candidate.httpCode,
+			description: candidate.description,
+			context: candidate.context,
+		}) as unknown as JsonObject;
+		return new NodeApiError(this.getNode(), errorJson, {
 			itemIndex,
 			message: hint ? `${error.message} ${hint}` : error.message,
 		});
@@ -2723,9 +2968,18 @@ function enrichError(this: IExecuteFunctions, error: unknown, itemIndex: number)
 }
 
 function getErrorHint(error: unknown): string {
-	const candidate = error as { message?: string; httpCode?: string; statusCode?: number };
+	const candidate = error as {
+		message?: string;
+		httpCode?: string;
+		statusCode?: number;
+		code?: string;
+		errno?: string;
+		context?: IDataObject;
+	};
 	const message = candidate?.message ?? '';
 	const httpCode = candidate?.httpCode ?? String(candidate?.statusCode ?? '');
+	const errorCode = candidate?.code ?? candidate?.errno ?? '';
+	const path = typeof candidate?.context?.path === 'string' ? String(candidate.context.path) : '';
 	const lowerMessage = message.toLowerCase();
 
 	if (httpCode === '409') {
@@ -2739,12 +2993,25 @@ function getErrorHint(error: unknown): string {
 		return 'The referenced resource was not found in the backend.';
 	}
 
-	if (httpCode === '503' && lowerMessage.includes('/health/deps')) {
+	if (httpCode === '503' && (lowerMessage.includes('/health/deps') || path === '/health/deps')) {
 		return 'The backend is reachable, but one or more dependencies are not ready yet. If the instance is still waiting for pairing, check Get Status and Get Pairing QR.';
 	}
 
 	if (httpCode === '400' && lowerMessage.includes('group')) {
 		return 'Check that the JID belongs to a real WhatsApp group.';
+	}
+
+	if (errorCode === 'ECONNABORTED' || errorCode === 'ETIMEDOUT' || lowerMessage.includes('timeout')) {
+		return 'The request timed out or was aborted before the backend answered. Increase the credential timeout, check reverse-proxy time limits, review the backend queue health, and confirm the WhatsApp socket is ready before sending.';
+	}
+
+	if (
+		errorCode === 'ECONNRESET'
+		|| lowerMessage.includes('socket hang up')
+		|| lowerMessage.includes('socket closed')
+		|| lowerMessage.includes('connection reset')
+	) {
+		return 'The backend or an upstream proxy closed the connection unexpectedly. Check wa-instance logs, reverse-proxy timeouts and whether the service restarted during the request.';
 	}
 
 	if (lowerMessage.includes('without qr pairing method')) {
@@ -2756,4 +3023,12 @@ function getErrorHint(error: unknown): string {
 	}
 
 	return '';
+}
+
+function getErrorMessage(error: unknown): string {
+	if (error instanceof Error && error.message) {
+		return error.message;
+	}
+
+	return String(error);
 }
