@@ -122,3 +122,63 @@ test('Chat Get Recent Messages calls /chats/:jid/messages and returns response.i
 		],
 	]);
 });
+
+test('Message Get Many exposes outbound audit filters and raises limit max to 1000', () => {
+	const node = new BaileysInstance();
+	const properties = node.description.properties;
+
+	const messageFilters = properties.find((property) => property.name === 'messageFilters');
+	assert.ok(messageFilters);
+
+	const limitOption = messageFilters.options.find((option) => option.name === 'limit');
+	assert.equal(limitOption.typeOptions.maxValue, 1000);
+	assert.ok(messageFilters.options.some((option) => option.name === 'toPhone'));
+	assert.ok(messageFilters.options.some((option) => option.name === 'textContains'));
+	assert.ok(messageFilters.options.some((option) => option.name === 'cursor'));
+});
+
+test('Message Get Many forwards new outbound audit filters and preserves the response envelope', async () => {
+	const node = new BaileysInstance();
+	const responseData = {
+		items: [{ message_id: 's1', status: 'queued' }],
+		count: 1,
+		has_more: true,
+		next_cursor: 'cursor-2',
+	};
+	const { context, requests } = createExecuteContext(
+		{
+			resource: 'message',
+			operation: 'getMany',
+			messageFilters: {
+				status: 'queued',
+				toJid: '123@s.whatsapp.net',
+				clientRef: 'client-1',
+				from: '2026-06-01T00:00:00.000Z',
+				to: '2026-06-30T23:59:59.999Z',
+				limit: 1000,
+				toPhone: '34600111222',
+				textContains: 'audit me',
+				cursor: 'cursor-1',
+			},
+		},
+		responseData,
+	);
+
+	const output = await node.execute.call(context);
+
+	assert.equal(requests.length, 1);
+	assert.equal(requests[0].method, 'GET');
+	assert.equal(requests[0].url, 'https://wa-instance.example.com/sends');
+	assert.deepEqual(requests[0].qs, {
+		status: 'queued',
+		to_jid: '123@s.whatsapp.net',
+		client_ref: 'client-1',
+		from: '2026-06-01T00:00:00.000Z',
+		to: '2026-06-30T23:59:59.999Z',
+		limit: 1000,
+		to_phone: '34600111222',
+		text_contains: 'audit me',
+		cursor: 'cursor-1',
+	});
+	assert.deepEqual(output, [[{ json: responseData, pairedItem: 0 }]]);
+});

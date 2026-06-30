@@ -700,6 +700,7 @@ const operationProperties = [
         },
         options: [
             { displayName: 'Client Ref', name: 'clientRef', type: 'string', default: '' },
+            { displayName: 'Cursor', name: 'cursor', type: 'string', default: '' },
             { displayName: 'From', name: 'from', type: 'dateTime', default: '' },
             {
                 displayName: 'Limit',
@@ -707,11 +708,13 @@ const operationProperties = [
                 type: 'number',
                 default: 50,
                 description: 'Max number of results to return',
-                typeOptions: { minValue: 1, maxValue: 100 },
+                typeOptions: { minValue: 1, maxValue: 1000 },
             },
             { displayName: 'Status', name: 'status', type: 'string', default: '' },
+            { displayName: 'Text Contains', name: 'textContains', type: 'string', default: '' },
             { displayName: 'To', name: 'to', type: 'dateTime', default: '' },
             { displayName: 'To JID', name: 'toJid', type: 'string', default: '' },
+            { displayName: 'To Phone', name: 'toPhone', type: 'string', default: '' },
         ],
     },
     {
@@ -1992,6 +1995,9 @@ async function executeMessageOperation(itemIndex, operation) {
                     client_ref: getOptionalString(filters.clientRef),
                     from: getOptionalString(filters.from),
                     to: getOptionalString(filters.to),
+                    to_phone: getOptionalString(filters.toPhone),
+                    text_contains: getOptionalString(filters.textContains),
+                    cursor: getOptionalString(filters.cursor),
                     limit: filters.limit,
                 }),
             });

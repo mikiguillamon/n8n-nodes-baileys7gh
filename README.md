@@ -114,6 +114,14 @@ Notas importantes sobre onboarding y readiness:
 - Send Receipts
 - Refresh Media
 
+### Message -> Get Many
+
+- Usa `GET /sends` para auditoría outbound.
+- Mantiene los filtros existentes: `status`, `to_jid`, `client_ref`, `from`, `to`, `limit`.
+- Añade soporte para los filtros nuevos: `to_phone`, `text_contains`, `cursor`.
+- `Limit` ahora admite hasta `1000`.
+- La salida del nodo conserva el comportamiento histórico: devuelve el JSON completo del backend en un único item, incluyendo `items`, `count`, `has_more` y `next_cursor` cuando estén presentes.
+
 ### Batch
 
 - Send Text Batch
